@@ -100,8 +100,8 @@ export default function AdminDashboard() {
       const { error } = await supabase
         .from('orders')
         .update({ 
-          status: newStatus as 'pending' | 'confirmed' | 'packing' | 'ready' | 'dispatched' | 'completed' | 'cancelled'
-        })
+          status: newStatus
+        } as any)
         .eq('id', orderId)
 
       if (error) throw error

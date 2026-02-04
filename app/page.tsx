@@ -6,7 +6,7 @@ import { Features } from '@/components/home/Features'
 export const revalidate = 60 // Revalidate every 60 seconds
 
 export default async function HomePage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   
   const { data: products, error } = await supabase
     .from('products')

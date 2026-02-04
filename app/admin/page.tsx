@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils/format'
 import { Loader2, Printer, Search, Filter } from 'lucide-react'
+import type { Database } from '@/lib/supabase/database.types'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -99,9 +100,11 @@ export default function AdminDashboard() {
       const supabase = createClient()
       const { error } = await supabase
         .from('orders')
+        // @ts-expect-error - Supabase type inference issue with update
         .update({ 
-          status: newStatus
-        } as any)
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', orderId)
 
       if (error) throw error

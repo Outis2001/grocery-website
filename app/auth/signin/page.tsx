@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Phone, Loader2 } from 'lucide-react'
 
-export default function SignInPage() {
+function SignInForm() {
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -16,8 +16,18 @@ export default function SignInPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
+  const urlError = searchParams.get('error')
 
   useEffect(() => {
+    // Show error from URL if present
+    if (urlError) {
+      if (urlError === 'auth_failed') {
+        setError('Authentication failed. Please try signing in again.')
+      } else {
+        setError(decodeURIComponent(urlError))
+      }
+    }
+
     // Check if already signed in
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
@@ -25,7 +35,7 @@ export default function SignInPage() {
         router.push(redirect)
       }
     })
-  }, [router, redirect])
+  }, [router, redirect, urlError])
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,7 +48,8 @@ export default function SignInPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+          shouldCreateUser: true,
         },
       })
 
@@ -233,5 +244,17 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   )
 }

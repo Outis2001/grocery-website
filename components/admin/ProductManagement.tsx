@@ -54,12 +54,13 @@ export function ProductManagement() {
 
       if (error) throw error
 
-      setProducts(data || [])
-      setFilteredProducts(data || [])
+      const list = (data || []) as Product[]
+      setProducts(list)
+      setFilteredProducts(list)
 
       // Extract unique categories
       const uniqueCategories = Array.from(
-        new Set(data?.map((p) => p.category) || [])
+        new Set(list.map((p) => p.category))
       ).sort()
       setCategories(uniqueCategories)
     } catch (error) {
@@ -82,6 +83,7 @@ export function ProductManagement() {
       const supabase = createClient()
       const { error } = await supabase
         .from('products')
+        // @ts-ignore - Supabase .update() infers 'never' in strict builds
         .update({ is_available: !currentStatus })
         .eq('id', productId)
 

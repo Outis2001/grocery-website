@@ -2,10 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/lib/supabase/database.types'
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react'
-
-type ProductUpdate = Database['public']['Tables']['products']['Update']
 
 interface ProductImageUploadProps {
   productId: string
@@ -71,7 +68,8 @@ export function ProductImageUpload({
       // Update product record
       const { error: updateError } = await supabase
         .from('products')
-        .update({ image_url: publicUrl } as ProductUpdate)
+        // @ts-ignore - Supabase .update() infers 'never' in strict builds
+        .update({ image_url: publicUrl })
         .eq('id', productId)
 
       if (updateError) throw updateError
@@ -124,7 +122,8 @@ export function ProductImageUpload({
       // Update product record
       const { error: updateError } = await supabase
         .from('products')
-        .update({ image_url: null } as ProductUpdate)
+        // @ts-ignore - Supabase .update() infers 'never' in strict builds
+        .update({ image_url: null })
         .eq('id', productId)
 
       if (updateError) throw updateError

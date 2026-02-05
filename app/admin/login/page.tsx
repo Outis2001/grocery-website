@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { PasswordInput } from '@/components/auth/PasswordInput'
 import { Loader2, Shield } from 'lucide-react'
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -50,13 +50,14 @@ export default function AdminLoginPage() {
       const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
       const emailMatchesAdmin = adminEmail && user?.email === adminEmail
 
-      let profile: { is_admin?: boolean } | null = null
+      type AdminProfile = { is_admin?: boolean } | null
+      let profile: AdminProfile = null
       if (user) {
         const res = await supabase.from('user_profiles').select('is_admin').eq('user_id', user.id).single()
-        profile = res.data
+        profile = res.data as AdminProfile
       }
 
-      const isAdmin = profile?.is_admin === true || emailMatchesAdmin
+      const isAdmin = (profile && profile.is_admin === true) || !!emailMatchesAdmin
       if (!user || !isAdmin) {
         await supabase.auth.signOut()
         setError('Access denied. Admin credentials required.')
@@ -157,5 +158,19 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+        </div>
+      }
+    >
+      <AdminLoginForm />
+    </Suspense>
   )
 }

@@ -33,13 +33,15 @@ export default function AdminDashboard() {
       const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
       const emailMatchesAdmin = adminEmail && data.user.email === adminEmail
 
-      const { data: profile } = await supabase
+      type AdminProfile = { is_admin?: boolean } | null
+      const res = await supabase
         .from('user_profiles')
         .select('is_admin')
         .eq('user_id', data.user.id)
         .single()
+      const profile = res.data as AdminProfile
 
-      const isAdmin = profile?.is_admin === true || emailMatchesAdmin
+      const isAdmin = (profile && profile.is_admin === true) || !!emailMatchesAdmin
       if (!isAdmin) {
         router.push('/?error=admin_access_denied')
         return

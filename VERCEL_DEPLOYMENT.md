@@ -44,6 +44,9 @@ git push -u origin main
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
+# App URL (REQUIRED for magic link to work – use your Vercel URL so links don't go to localhost)
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+
 # Shop Location (REQUIRED)
 NEXT_PUBLIC_SHOP_LAT=6.2357
 NEXT_PUBLIC_SHOP_LNG=80.0534
@@ -121,6 +124,18 @@ Test these critical flows:
 4. Update Supabase URLs with new domain
 
 ## Common Deployment Issues
+
+### Magic link redirects to localhost
+
+If sign-in magic links send you to `http://localhost:3000` instead of your Vercel site:
+
+1. In Vercel → Project → Settings → Environment Variables, add:
+   - **Name:** `NEXT_PUBLIC_APP_URL`
+   - **Value:** `https://your-app.vercel.app` (your real Vercel URL, no trailing slash)
+2. In Supabase → Authentication → URL Configuration:
+   - Set **Site URL** to `https://your-app.vercel.app`
+   - Add **Redirect URLs:** `https://your-app.vercel.app/auth/callback`
+3. Redeploy the project on Vercel, then try sign-in again.
 
 ### Build Fails
 

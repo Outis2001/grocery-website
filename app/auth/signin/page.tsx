@@ -45,10 +45,14 @@ function SignInForm() {
 
     try {
       const supabase = createClient()
+      // Use NEXT_PUBLIC_APP_URL in production so magic link goes to your Vercel URL, not localhost
+      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || window.location.origin).replace(/\/$/, '')
+      const redirectTo = `${baseUrl}/auth/callback?redirect=${encodeURIComponent(redirect)}`
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+          emailRedirectTo: redirectTo,
           shouldCreateUser: true,
         },
       })

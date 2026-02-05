@@ -131,9 +131,12 @@ In your Supabase dashboard:
 2. **Authentication → Email Templates**:
    - Customize the magic link email template
 
-3. **Authentication → URL Configuration**:
-   - Add your site URL (e.g., `http://localhost:3000` for dev)
-   - Add redirect URLs
+3. **Authentication → URL Configuration** (important for magic links):
+   - **Site URL**: Use your app URL. For local dev use `http://localhost:3000`; for production use your Vercel URL (e.g. `https://your-app.vercel.app`).
+   - **Redirect URLs**: Add both:
+     - `http://localhost:3000/auth/callback` (dev)
+     - `https://your-app.vercel.app/auth/callback` (replace with your Vercel URL)
+   If the magic link sends you to localhost after deploying, set **Site URL** to your Vercel URL and ensure the Vercel callback URL is in **Redirect URLs**.
 
 ### 6. Get Email Credentials
 
@@ -161,8 +164,23 @@ Open [http://localhost:3000](http://localhost:3000)
 
 1. Push your code to GitHub
 2. Go to [vercel.com](https://vercel.com) and import your repository
-3. Add all environment variables from `.env.local`
-4. Deploy!
+3. Add all environment variables from `.env.local`, **and set**:
+   - `NEXT_PUBLIC_APP_URL` = your Vercel URL (e.g. `https://your-app.vercel.app`) so magic links go to the deployed site, not localhost.
+4. In **Supabase Dashboard → Authentication → URL Configuration**:
+   - Set **Site URL** to your Vercel URL (e.g. `https://your-app.vercel.app`)
+   - Add **Redirect URLs**: `https://your-app.vercel.app/auth/callback` (and keep `http://localhost:3000/auth/callback` for local dev)
+5. Deploy!
+
+### Magic link redirects to localhost?
+
+If after deploying to Vercel the magic link sends you to `localhost` instead of your live site:
+
+1. **Vercel**: In Project → Settings → Environment Variables, add:
+   - `NEXT_PUBLIC_APP_URL` = `https://your-app.vercel.app` (your actual Vercel URL, no trailing slash)
+2. **Supabase**: Dashboard → **Authentication** → **URL Configuration**:
+   - Set **Site URL** to `https://your-app.vercel.app`
+   - In **Redirect URLs**, add `https://your-app.vercel.app/auth/callback`
+3. Redeploy on Vercel after adding the env var, then try sign-in again.
 
 ### Connect Hostinger Domain
 

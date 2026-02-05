@@ -213,3 +213,84 @@ export async function sendOrderEmail(data: OrderEmailData): Promise<void> {
     throw error
   }
 }
+
+/** Password reset email (link expires in 5 minutes) */
+export async function sendPasswordResetEmail(to: string, resetLink: string): Promise<void> {
+  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery'
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header {
+          background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+          color: white;
+          padding: 30px;
+          text-align: center;
+          border-radius: 10px 10px 0 0;
+        }
+        .content {
+          background: #f9fafb;
+          padding: 30px;
+          border-radius: 0 0 10px 10px;
+        }
+        .btn {
+          display: inline-block;
+          background: #22c55e;
+          color: white !important;
+          padding: 14px 28px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: bold;
+          margin: 20px 0;
+        }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 0.9em; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🛒 Reset Your Password</h1>
+        </div>
+        <div class="content">
+          <p>You requested a password reset for ${shopName}.</p>
+          <p>Click the button below to reset your password. This link expires in 5 minutes.</p>
+          <a href="${resetLink}" class="btn">Reset Password</a>
+          <p>If you didn't request this, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+          <p>${shopName}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  try {
+    if (resend && process.env.SMTP_FROM) {
+      await resend.emails.send({
+        from: process.env.SMTP_FROM,
+        to,
+        subject: `Reset Your Password - ${shopName}`,
+        html,
+      })
+      return
+    }
+    if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to,
+        subject: `Reset Your Password - ${shopName}`,
+        html,
+      })
+      return
+    }
+    throw new Error('No email service configured')
+  } catch (error) {
+    console.error('Password reset email error:', error)
+    throw error
+  }
+}

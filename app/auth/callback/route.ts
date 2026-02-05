@@ -71,21 +71,42 @@ export async function GET(request: NextRequest) {
     }
   )
   
-  const { error } = await supabase.auth.exchangeCodeForSession(code)
-  
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
   if (error) {
     console.error('Auth callback error:', error)
-    console.error('Error details:', {
-      code: error.code,
-      message: error.message,
-      status: error.status,
-    })
-    
-    // Redirect to signin with specific error message
     return NextResponse.redirect(
       new URL(`/auth/signin?error=${encodeURIComponent(error.message)}`, origin)
     )
   }
 
+  // Determine final redirect URL
+  let finalRedirect = redirect
+  const userId = data.user?.id
+
+  if (userId) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('requires_password_setup')
+      .eq('user_id', userId)
+      .single()
+
+    // Create profile if trigger didn't run (e.g., existing user)
+    if (!profile) {
+      await supabase.from('user_profiles').upsert(
+        { user_id: userId, requires_password_setup: true },
+        { onConflict: 'user_id' }
+      )
+    }
+
+    const requiresPasswordSetup = profile?.requires_password_setup !== false
+
+    if (requiresPasswordSetup) {
+      finalRedirect = '/auth/create-password'
+    }
+  }
+
+  // Use same response to preserve session cookies, update redirect
+  response.headers.set('Location', new URL(finalRedirect, origin).toString())
   return response
 }

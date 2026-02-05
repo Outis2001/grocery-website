@@ -9,6 +9,84 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      user_profiles: {
+        Row: {
+          id: string
+          user_id: string
+          requires_password_setup: boolean
+          password_set_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          requires_password_setup?: boolean
+          password_set_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          requires_password_setup?: boolean
+          password_set_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          session_token: string
+          created_at: string
+          expires_at: string
+          last_activity: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_token: string
+          created_at?: string
+          expires_at: string
+          last_activity?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_token?: string
+          created_at?: string
+          expires_at?: string
+          last_activity?: string
+        }
+      }
+      verification_tokens: {
+        Row: {
+          id: string
+          identifier: string
+          token: string
+          type: string
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          identifier: string
+          token: string
+          type: string
+          expires_at: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          identifier?: string
+          token?: string
+          type?: string
+          expires_at?: string
+          created_at?: string
+        }
+      }
       products: {
         Row: {
           id: string
@@ -155,6 +233,12 @@ export interface Database {
           subtotal?: number
           created_at?: string
         }
+      }
+    }
+    Functions: {
+      verify_verification_token: {
+        Args: { p_token: string; p_type: string }
+        Returns: string | null
       }
     }
   }

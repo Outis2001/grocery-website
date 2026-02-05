@@ -13,7 +13,7 @@ A modern, mobile-first grocery e-commerce platform built for Sri Lankan business
   - Free delivery on orders over LKR 5,000
   - Base fee (LKR 100) + per km rate (LKR 40/km)
   - Optional express delivery (+LKR 150)
-- **Authentication**: Sign in via email magic link or phone OTP
+- **Authentication**: Password-based sign-in (email or phone). First-time users verify via email link or phone OTP, then create a password for future logins.
 - **Order Tracking**: View order history and status updates
 - **WhatsApp Integration**: Send order details directly to shop via WhatsApp
 
@@ -36,7 +36,7 @@ A modern, mobile-first grocery e-commerce platform built for Sri Lankan business
 - **Styling**: Tailwind CSS
 - **Maps**: Leaflet with OpenStreetMap
 - **Email**: Resend (3,000 free/month) or SMTP fallback
-- **Auth**: Supabase Auth (Email & Phone OTP)
+- **Auth**: Supabase Auth (Email & Phone, password-based with verification)
 - **Deployment**: Vercel (recommended)
 
 ## 📋 Prerequisites
@@ -62,7 +62,8 @@ npm install
 
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to **SQL Editor** and run the `supabase-schema.sql` file
-3. Go to **Settings → API** and copy:
+3. Run the `supabase-auth-schema.sql` file for password-based auth tables
+4. Go to **Settings → API** and copy:
    - Project URL
    - Anon/Public key
 
@@ -80,6 +81,8 @@ Fill in your values:
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+# Service role key (required for auth - get from Supabase Dashboard → Settings → API)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Shop Location (Ambalangoda coordinates)
 NEXT_PUBLIC_SHOP_LAT=6.2357
@@ -125,17 +128,23 @@ Update the SQL policy in Supabase to match your admin email, or run:
 In your Supabase dashboard:
 
 1. **Authentication → Providers**:
-   - Enable **Email** (OTP/Magic Link)
-   - Enable **Phone** (optional, requires SMS provider like Twilio)
-   
-2. **Authentication → Email Templates**:
+   - Enable **Email** (Magic Link for verification)
+   - Enable **Phone** (optional, requires SMS provider like Twilio for OTP)
+   - Enable **Email + Password** and **Phone + Password** for login
+
+2. **Authentication → Settings → JWT Expiry**:
+   - Set to **43200** (12 hours) for session timeout
+
+3. **Authentication → Email Templates**:
    - Customize the magic link email template
 
-3. **Authentication → URL Configuration** (important for magic links):
+4. **Authentication → URL Configuration** (important for magic links):
    - **Site URL**: Use your app URL. For local dev use `http://localhost:3000`; for production use your Vercel URL (e.g. `https://your-app.vercel.app`).
-   - **Redirect URLs**: Add both:
+   - **Redirect URLs**: Add:
      - `http://localhost:3000/auth/callback` (dev)
-     - `https://your-app.vercel.app/auth/callback` (replace with your Vercel URL)
+     - `https://your-app.vercel.app/auth/callback` (production)
+     - `http://localhost:3000/auth/reset-password` (password reset)
+     - `https://your-app.vercel.app/auth/reset-password` (password reset prod)
    If the magic link sends you to localhost after deploying, set **Site URL** to your Vercel URL and ensure the Vercel callback URL is in **Redirect URLs**.
 
 ### 6. Get Email Credentials

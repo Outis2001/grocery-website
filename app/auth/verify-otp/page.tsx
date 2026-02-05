@@ -9,17 +9,25 @@ function VerifyOTPForm() {
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
+  const [resendCooldown, setResendCooldown] = useState(0)
+
   const router = useRouter()
   const searchParams = useSearchParams()
   const phone = searchParams.get('phone') || ''
-  const redirect = searchParams.get('redirect') || '/'
+  const redirect = searchParams.get('redirect') || '/auth/create-password'
 
   useEffect(() => {
     if (!phone) {
-      router.push('/auth/signin')
+      router.push('/auth/signup')
     }
   }, [phone, router])
+
+  // Countdown for resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setInterval(() => setResendCooldown((c) => c - 1), 1000)
+    return () => clearInterval(timer)
+  }, [resendCooldown])
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,16 +44,16 @@ function VerifyOTPForm() {
 
       if (error) throw error
 
-      // Success - redirect
       router.push(redirect)
-    } catch (err: any) {
-      setError(err.message || 'Invalid OTP')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Invalid OTP')
     } finally {
       setLoading(false)
     }
   }
 
   const handleResend = async () => {
+    if (resendCooldown > 0) return
     setLoading(true)
     setError('')
 
@@ -55,9 +63,10 @@ function VerifyOTPForm() {
 
       if (error) throw error
 
-      alert('OTP sent!')
-    } catch (err: any) {
-      setError(err.message || 'Failed to resend OTP')
+      setResendCooldown(60)
+      setError('') // Clear any previous error
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to resend OTP')
     } finally {
       setLoading(false)
     }
@@ -121,10 +130,12 @@ function VerifyOTPForm() {
             <button
               type="button"
               onClick={handleResend}
-              disabled={loading}
-              className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+              disabled={loading || resendCooldown > 0}
+              className="text-primary-600 hover:text-primary-700 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Didn't receive the code? Resend
+              {resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : "Didn't receive the code? Resend"}
             </button>
           </div>
         </div>

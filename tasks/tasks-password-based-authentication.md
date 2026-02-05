@@ -46,11 +46,11 @@ Update the file after completing each sub-task, not just after completing an ent
 
 ## Tasks
 
-- [ ] 0.0 Create feature branch
+- [x] 0.0 Create feature branch
   - [x] 0.1 Create and checkout a new branch: `git checkout -b feature/password-based-auth` *(run manually if branch creation had issues)*
 
-- [ ] 1.0 Set up database schema and infrastructure
-  - [ ] 1.1 Read current `supabase-schema.sql` file to understand existing schema
+- [x] 1.0 Set up database schema and infrastructure
+  - [x] 1.1 Read current `supabase-schema.sql` file to understand existing schema
   - [ ] 1.2 Add `password_set_at` timestamp column to track when user completed password setup
   - [ ] 1.3 Add `requires_password_setup` boolean column (default true) for migration tracking
   - [ ] 1.4 Create `user_sessions` table with columns: id, user_id, session_token, created_at, expires_at, last_activity

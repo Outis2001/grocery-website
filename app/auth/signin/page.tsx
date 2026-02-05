@@ -2,33 +2,26 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Mail, Phone, Loader2 } from 'lucide-react'
+import { PasswordInput } from '@/components/auth/PasswordInput'
+import { Loader2 } from 'lucide-react'
 
 function SignInForm() {
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
-  
+
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
   const urlError = searchParams.get('error')
 
   useEffect(() => {
-    // Show error from URL if present
     if (urlError) {
-      if (urlError === 'auth_failed') {
-        setError('Authentication failed. Please try signing in again.')
-      } else {
-        setError(decodeURIComponent(urlError))
-      }
+      setError(decodeURIComponent(urlError))
     }
-
-    // Check if already signed in
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
@@ -37,66 +30,39 @@ function SignInForm() {
     })
   }, [router, redirect, urlError])
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setMessage('')
-
-    try {
-      const supabase = createClient()
-      // Use NEXT_PUBLIC_APP_URL in production so magic link goes to your Vercel URL, not localhost
-      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || window.location.origin).replace(/\/$/, '')
-      const redirectTo = `${baseUrl}/auth/callback?redirect=${encodeURIComponent(redirect)}`
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectTo,
-          shouldCreateUser: true,
-        },
-      })
-
-      if (error) throw error
-
-      setMessage('Check your email for the magic link!')
-    } catch (err: any) {
-      setError(err.message || 'An error occurred')
-    } finally {
-      setLoading(false)
+  const formatPhone = (value: string): string => {
+    let formatted = value.trim()
+    if (!formatted.startsWith('+')) {
+      if (formatted.startsWith('0')) {
+        formatted = '+94' + formatted.substring(1)
+      } else if (formatted.startsWith('94')) {
+        formatted = '+' + formatted
+      } else {
+        formatted = '+94' + formatted
+      }
     }
+    return formatted
   }
 
-  const handlePhoneSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setMessage('')
 
     try {
-      // Format phone number (ensure it starts with country code)
-      let formattedPhone = phone.trim()
-      if (!formattedPhone.startsWith('+')) {
-        if (formattedPhone.startsWith('0')) {
-          formattedPhone = '+94' + formattedPhone.substring(1)
-        } else if (formattedPhone.startsWith('94')) {
-          formattedPhone = '+' + formattedPhone
-        } else {
-          formattedPhone = '+94' + formattedPhone
-        }
-      }
-
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
+      const isEmail = username.includes('@')
+      const { error } = await supabase.auth.signInWithPassword({
+        ...(isEmail
+          ? { email: username, password }
+          : { phone: formatPhone(username), password }),
       })
 
       if (error) throw error
 
-      // Redirect to OTP verification page
-      router.push(`/auth/verify-otp?phone=${encodeURIComponent(formattedPhone)}&redirect=${redirect}`)
-    } catch (err: any) {
-      setError(err.message || 'An error occurred')
+      router.push(redirect)
+    } catch (err: unknown) {
+      setError('Invalid username or password')
     } finally {
       setLoading(false)
     }
@@ -106,145 +72,83 @@ function SignInForm() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex p-4 rounded-full bg-primary-100 mb-4">
               <span className="text-4xl">🛒</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              Sign In to Continue
-            </h1>
-            <p className="text-gray-600">
-              Choose your preferred sign-in method
-            </p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+            <p className="text-gray-600">Sign in to your account</p>
           </div>
 
-          {/* Auth Method Toggle */}
-          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setAuthMethod('email')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition ${
-                authMethod === 'email'
-                  ? 'bg-white text-primary-600 shadow'
-                  : 'text-gray-600'
-              }`}
-            >
-              <Mail className="w-5 h-5" />
-              Email
-            </button>
-            <button
-              type="button"
-              onClick={() => setAuthMethod('phone')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition ${
-                authMethod === 'phone'
-                  ? 'bg-white text-primary-600 shadow'
-                  : 'text-gray-600'
-              }`}
-            >
-              <Phone className="w-5 h-5" />
-              Phone
-            </button>
-          </div>
-
-          {/* Messages */}
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
-          {message && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-              {message}
+
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Email or Phone Number
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="your@email.com or 0771234567"
+                required
+                autoComplete="username"
+                inputMode={username.includes('@') ? 'email' : 'tel'}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
             </div>
-          )}
 
-          {/* Email Form */}
-          {authMethod === 'email' && (
-            <form onSubmit={handleEmailSignIn} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <PasswordInput
+                id="password"
+                value={password}
+                onChange={setPassword}
+                placeholder="Enter password"
+                autoComplete="current-password"
+                required
+              />
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            <div className="text-right">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm font-medium text-primary-600 hover:text-primary-700"
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  'Send Magic Link'
-                )}
-              </button>
+                Forgot password?
+              </Link>
+            </div>
 
-              <p className="text-xs text-gray-500 text-center">
-                We'll send you a magic link to sign in instantly
-              </p>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Log In'
+              )}
+            </button>
+          </form>
 
-          {/* Phone Form */}
-          {authMethod === 'phone' && (
-            <form onSubmit={handlePhoneSignIn} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="077 123 4567"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Format: 077XXXXXXX or +9477XXXXXXX
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  'Send OTP'
-                )}
-              </button>
-
-              <p className="text-xs text-gray-500 text-center">
-                We'll send you a one-time password to verify your number
-              </p>
-            </form>
-          )}
-
-          {/* Note about Supabase Auth */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800">
-              <strong>Note:</strong> Phone authentication requires Supabase Phone Auth to be enabled in your project settings.
-              For testing, use email authentication or configure a phone provider (Twilio, MessageBird, etc.).
-            </p>
-          </div>
+          <p className="mt-6 text-center text-sm text-gray-600">
+            New here?{' '}
+            <Link href="/auth/signup" className="font-medium text-primary-600 hover:text-primary-700">
+              Create an account
+            </Link>
+          </p>
         </div>
       </div>
     </div>
@@ -253,11 +157,13 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+        </div>
+      }
+    >
       <SignInForm />
     </Suspense>
   )

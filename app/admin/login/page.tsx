@@ -50,9 +50,11 @@ export default function AdminLoginPage() {
       const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
       const emailMatchesAdmin = adminEmail && user?.email === adminEmail
 
-      const { data: profile } = user
-        ? await supabase.from('user_profiles').select('is_admin').eq('user_id', user.id).single()
-        : { data: null }
+      let profile: { is_admin?: boolean } | null = null
+      if (user) {
+        const res = await supabase.from('user_profiles').select('is_admin').eq('user_id', user.id).single()
+        profile = res.data
+      }
 
       const isAdmin = profile?.is_admin === true || emailMatchesAdmin
       if (!user || !isAdmin) {

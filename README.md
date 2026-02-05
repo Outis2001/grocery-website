@@ -21,7 +21,8 @@ A modern, mobile-first grocery e-commerce platform built for Sri Lankan business
 - **Order Dashboard**: View all orders with filtering and search
 - **Status Management**: Update order status (pending → confirmed → packing → ready → dispatched → completed)
 - **Print Invoices**: Generate printable invoices for orders
-- **Real-time Updates**: Orders sync automatically
+- **Product Image Management**: Upload, update, and delete product images directly from the admin panel
+- **Real-time Updates**: Orders and products sync automatically
 
 ### Design & UX
 - **Mobile-First**: Optimized for Sri Lankan mobile users
@@ -63,7 +64,11 @@ npm install
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to **SQL Editor** and run the `supabase-schema.sql` file
 3. Run the `supabase-auth-schema.sql` file for password-based auth tables
-4. Go to **Settings → API** and copy:
+4. Run the `supabase-admin-schema.sql` file for admin login (adds `is_admin` / `skip_verification` to user profiles)
+5. Set up Storage for product images:
+   - Go to **Storage** → Create bucket named `product-images` (public)
+   - Run `supabase-storage-setup.sql` in SQL Editor
+6. Go to **Settings → API** and copy:
    - Project URL
    - Anon/Public key
 
@@ -108,8 +113,9 @@ SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=your-email@gmail.com
 
-# Admin
+# Admin (set both; NEXT_PUBLIC_ADMIN_EMAIL is used for admin login fallback)
 ADMIN_EMAIL=admin@yourshop.lk
+NEXT_PUBLIC_ADMIN_EMAIL=admin@yourshop.lk
 
 # WhatsApp
 WHATSAPP_PHONE=94771234567
@@ -117,11 +123,20 @@ WHATSAPP_PHONE=94771234567
 
 ### 4. Configure Admin Access
 
-Update the SQL policy in Supabase to match your admin email, or run:
+Admins log in at **`/admin/login`** with email and password only (no email verification). Access is controlled by the `NEXT_PUBLIC_ADMIN_EMAIL` env variable and the `is_admin` flag in the database.
 
-```sql
--- Replace admin@yourshop.lk with your actual email
-```
+**Create your first admin (existing user):**
+
+1. Ensure the user exists in **Supabase → Authentication → Users** (create one with email + password if needed).
+2. In **SQL Editor**, run `migrate-existing-admin.sql`. Replace the email in the script with your admin email (e.g. `benujith@gmail.com`).
+3. Set `NEXT_PUBLIC_ADMIN_EMAIL` in `.env.local` to that same email.
+
+**Add another admin later:**
+
+1. In Supabase: **Authentication → Users → Add User** (email + password, then confirm the user).
+2. In **SQL Editor**, run `create-admin-user.sql` and replace `admin@example.com` with the new admin’s email (or call `SELECT promote_to_admin('their@email.com');`).
+
+**Summary:** Admin accounts are created only via the Supabase dashboard and the SQL scripts above. There is no admin signup page. Admins use `/admin/login`; after sign-in they are redirected to the admin dashboard.
 
 ### 5. Enable Supabase Auth
 
@@ -234,6 +249,7 @@ To find your coordinates:
 
 ## 📦 Product Management
 
+### Add Products
 Products are managed via Supabase:
 
 1. Go to Supabase **Table Editor → products**
@@ -244,6 +260,17 @@ Products are managed via Supabase:
    - `price`: Price in LKR
    - `category`: Category name
    - `is_available`: true/false
+
+### Upload Product Images
+Use the admin panel to add images:
+
+1. Go to **`/admin/login`** (or `/admin`; you’ll be redirected to login) and sign in with your admin email and password
+2. Click the **Products** tab
+3. Find your product and click **Upload Image**
+4. Select an image file (max 5MB)
+5. Image appears on the website immediately!
+
+See `PRODUCT_IMAGES_SETUP.md` for detailed instructions.
 
 ## 🎨 Customization
 
@@ -266,7 +293,7 @@ NEXT_PUBLIC_SHOP_PHONE=+94XXXXXXXXX
 
 ## 🔒 Security Notes
 
-- **Admin Dashboard**: Only accessible to `ADMIN_EMAIL` users
+- **Admin Dashboard**: Only accessible to users whose email matches `NEXT_PUBLIC_ADMIN_EMAIL` or who have `is_admin = true` in `user_profiles`. Admins sign in at **`/admin/login`** (no email verification).
 - **Row-Level Security**: Enabled on all Supabase tables
 - **Protected Routes**: Checkout and orders require authentication
 - **Environment Variables**: Never commit `.env.local` to Git
@@ -275,7 +302,7 @@ NEXT_PUBLIC_SHOP_PHONE=+94XXXXXXXXX
 
 ```
 ├── app/                      # Next.js 14 App Router
-│   ├── admin/               # Admin dashboard
+│   ├── admin/               # Admin dashboard + /admin/login
 │   ├── api/orders/          # Order API routes
 │   ├── auth/                # Authentication pages
 │   ├── checkout/            # Checkout page
@@ -292,6 +319,11 @@ NEXT_PUBLIC_SHOP_PHONE=+94XXXXXXXXX
 │   ├── supabase/            # Supabase clients & types
 │   └── utils/               # Helper functions
 ├── supabase-schema.sql      # Database schema
+├── supabase-auth-schema.sql # Auth tables schema
+├── supabase-admin-schema.sql # Admin flags (is_admin, skip_verification)
+├── migrate-existing-admin.sql # One-time: mark existing user as admin
+├── create-admin-user.sql    # Promote any user to admin by email
+├── supabase-storage-setup.sql # Storage policies
 ├── .env.example             # Environment template
 └── README.md
 ```
@@ -313,13 +345,16 @@ MIT License - feel free to use for your business!
 
 - [ ] Install dependencies
 - [ ] Create Supabase project
-- [ ] Run database schema
-- [ ] Configure `.env.local`
+- [ ] Run database schema (`supabase-schema.sql` + `supabase-auth-schema.sql` + `supabase-admin-schema.sql`)
+- [ ] Set up Storage bucket for images (`supabase-storage-setup.sql`)
+- [ ] Configure `.env.local` (include `NEXT_PUBLIC_ADMIN_EMAIL`)
 - [ ] Enable Supabase Auth
+- [ ] Run `migrate-existing-admin.sql` to set up your first admin (then use `/admin/login`)
 - [ ] Get email credentials (Resend or SMTP)
 - [ ] Run `npm run dev`
 - [ ] Test signup and order flow
 - [ ] Add your products to Supabase
+- [ ] Upload product images via admin panel
 - [ ] Deploy to Vercel
 - [ ] Connect domain (optional)
 
@@ -329,7 +364,7 @@ MIT License - feel free to use for your business!
 2. **Update shop location** coordinates
 3. **Add real products** to Supabase
 4. **Set up email** (Resend or SMTP)
-5. **Configure admin email** in `.env.local`
+5. **Configure admin**: set `NEXT_PUBLIC_ADMIN_EMAIL` in `.env.local` and run `migrate-existing-admin.sql` (or `create-admin-user.sql`) in Supabase
 6. **Deploy to Vercel**
 7. **Test on mobile** devices
 8. **Share with customers!**

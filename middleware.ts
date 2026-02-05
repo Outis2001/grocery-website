@@ -73,16 +73,24 @@ export async function middleware(req: NextRequest) {
   }
 
   // Protected routes that require authentication
+  const pathname = req.nextUrl.pathname
+  const isAdminLoginPage = pathname === '/admin/login' || pathname.startsWith('/admin/login/')
   const protectedPaths = ['/checkout', '/orders', '/admin']
-  const isProtectedPath = protectedPaths.some((path) =>
-    req.nextUrl.pathname.startsWith(path)
-  )
+  const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path))
   const isCreatePassword = req.nextUrl.pathname === '/auth/create-password'
 
+  // /admin/login is public; other protected routes require session
   if (isProtectedPath && !session) {
-    const redirectUrl = new URL('/auth/signin', req.url)
-    redirectUrl.searchParams.set('redirect', req.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+    if (pathname.startsWith('/admin') && !isAdminLoginPage) {
+      const redirectUrl = new URL('/admin/login', req.url)
+      redirectUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+    if (pathname.startsWith('/checkout') || pathname.startsWith('/orders')) {
+      const redirectUrl = new URL('/auth/signin', req.url)
+      redirectUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   // If authenticated but must set password, redirect to create-password (except when already there)

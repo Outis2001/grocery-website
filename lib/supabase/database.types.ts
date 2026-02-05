@@ -15,6 +15,8 @@ export interface Database {
           user_id: string
           requires_password_setup: boolean
           password_set_at: string | null
+          is_admin: boolean
+          skip_verification: boolean
           created_at: string
           updated_at: string
         }
@@ -23,6 +25,8 @@ export interface Database {
           user_id: string
           requires_password_setup?: boolean
           password_set_at?: string | null
+          is_admin?: boolean
+          skip_verification?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -31,6 +35,8 @@ export interface Database {
           user_id?: string
           requires_password_setup?: boolean
           password_set_at?: string | null
+          is_admin?: boolean
+          skip_verification?: boolean
           created_at?: string
           updated_at?: string
         }

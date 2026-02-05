@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils/format'
-import { Loader2, Printer, Search, Filter } from 'lucide-react'
+import { Loader2, Printer, Search, Filter, ShoppingBag, Package } from 'lucide-react'
+import { ProductManagement } from '@/components/admin/ProductManagement'
 import type { Database } from '@/lib/supabase/database.types'
 
 export default function AdminDashboard() {
@@ -16,21 +17,31 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [updating, setUpdating] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'orders' | 'products'>('orders')
 
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient()
       const { data } = await supabase.auth.getUser()
-      
+
       if (!data.user) {
-        router.push('/auth/signin?redirect=/admin')
+        router.push('/admin/login?redirect=/admin')
         return
       }
 
-      // Check if user is admin
-      if (data.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        // Not admin, redirect
-        router.push('/')
+      // Check if user is admin: is_admin flag from user_profiles OR email matches (fallback)
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
+      const emailMatchesAdmin = adminEmail && data.user.email === adminEmail
+
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('is_admin')
+        .eq('user_id', data.user.id)
+        .single()
+
+      const isAdmin = profile?.is_admin === true || emailMatchesAdmin
+      if (!isAdmin) {
+        router.push('/?error=admin_access_denied')
         return
       }
 
@@ -240,56 +251,87 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage orders and track fulfillment</p>
+          <p className="text-gray-600">Manage orders and product images</p>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Search */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Search className="w-4 h-4 inline mr-2" />
-                Search Orders
-              </label>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Order #, name, or phone..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Filter className="w-4 h-4 inline mr-2" />
-                Filter by Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-              >
-                {statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {statusLabels[status]}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
+                activeTab === 'orders'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <ShoppingBag className="w-5 h-5 inline mr-2" />
+              Orders
+            </button>
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
+                activeTab === 'products'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Package className="w-5 h-5 inline mr-2" />
+              Products
+            </button>
+          </nav>
         </div>
 
-        {/* Orders List */}
-        <div className="space-y-4">
-          {filteredOrders.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-md p-12 text-center">
-              <p className="text-gray-500">No orders found</p>
+        {/* Tab Content */}
+        {activeTab === 'orders' ? (
+          <>
+            {/* Filters */}
+            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Search */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Search className="w-4 h-4 inline mr-2" />
+                    Search Orders
+                  </label>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Order #, name, or phone..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Filter className="w-4 h-4 inline mr-2" />
+                    Filter by Status
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  >
+                    {statuses.map((status) => (
+                      <option key={status} value={status}>
+                        {statusLabels[status]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
-          ) : (
-            filteredOrders.map((order) => (
+
+            {/* Orders List */}
+            <div className="space-y-4">
+              {filteredOrders.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-md p-12 text-center">
+                  <p className="text-gray-500">No orders found</p>
+                </div>
+              ) : (
+                filteredOrders.map((order) => (
               <div key={order.id} className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                   <div>
@@ -376,9 +418,13 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
-            ))
-          )}
-        </div>
+                ))
+              )}
+            </div>
+          </>
+        ) : (
+          <ProductManagement />
+        )}
       </div>
     </div>
   )

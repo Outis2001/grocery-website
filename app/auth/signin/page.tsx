@@ -17,10 +17,16 @@ function SignInForm() {
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
   const urlError = searchParams.get('error')
+  const urlSuccess = searchParams.get('success')
+
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     if (urlError) {
       setError(decodeURIComponent(urlError))
+    }
+    if (urlSuccess) {
+      setSuccessMessage(decodeURIComponent(urlSuccess))
     }
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
@@ -28,7 +34,7 @@ function SignInForm() {
         router.push(redirect)
       }
     })
-  }, [router, redirect, urlError])
+  }, [router, redirect, urlError, urlSuccess])
 
   const formatPhone = (value: string): string => {
     let formatted = value.trim()
@@ -83,6 +89,11 @@ function SignInForm() {
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
+            </div>
+          )}
+          {successMessage && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+              {successMessage}
             </div>
           )}
 

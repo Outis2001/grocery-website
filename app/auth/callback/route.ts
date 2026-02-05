@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     const requiresPasswordSetup = profile?.requires_password_setup !== false
 
     if (requiresPasswordSetup) {
-      finalRedirect = '/auth/create-password'
+      finalRedirect = `/auth/create-password?redirect=${encodeURIComponent(redirect)}`
     }
   }
 

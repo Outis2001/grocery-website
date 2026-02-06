@@ -1,5 +1,7 @@
 # 🛒 Ambalangoda Grocery - Online Grocery Shop
 
+[![CI](https://github.com/Outis2001/grocery-website/actions/workflows/ci.yml/badge.svg)](https://github.com/Outis2001/grocery-website/actions/workflows/ci.yml)
+
 A modern, mobile-first grocery e-commerce platform built for Sri Lankan businesses. Features pickup/delivery options, real-time distance calculation, and seamless order management.
 
 ## ✨ Features

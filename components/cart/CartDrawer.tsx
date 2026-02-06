@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { cartStorage, Cart } from '@/lib/utils/cart';
 import { formatCurrency } from '@/lib/utils/format';
 import { createClient } from '@/lib/supabase/client';
+import type { AuthUser } from '@/lib/supabase/types';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface CartDrawerProps {
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [cart, setCart] = useState<Cart>({ items: [], total: 0 });
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const router = useRouter();
 
   useEffect(() => {

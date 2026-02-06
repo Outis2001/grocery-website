@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { ShoppingCart, User, Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import type { AuthUser } from '@/lib/supabase/types';
 import { cartStorage } from '@/lib/utils/cart';
 import { CartDrawer } from '../cart/CartDrawer';
 
 export function Header() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [cartCount, setCartCount] = useState(0);
   const [showCart, setShowCart] = useState(false);
   const [showMenu, setShowMenu] = useState(false);

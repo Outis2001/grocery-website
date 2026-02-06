@@ -81,8 +81,7 @@ export function ProductManagement() {
       const supabase = createClient();
       const { error } = await supabase
         .from('products')
-        // @ts-ignore - Supabase .update() infers 'never' in strict builds
-        .update({ is_available: !currentStatus })
+        .update({ is_available: !currentStatus } as never)
         .eq('id', productId);
 
       if (error) throw error;

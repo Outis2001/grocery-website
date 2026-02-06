@@ -66,8 +66,7 @@ export function ProductImageUpload({
       // Update product record
       const { error: updateError } = await supabase
         .from('products')
-        // @ts-ignore - Supabase .update() infers 'never' in strict builds
-        .update({ image_url: publicUrl })
+        .update({ image_url: publicUrl } as never)
         .eq('id', productId);
 
       if (updateError) throw updateError;
@@ -81,9 +80,9 @@ export function ProductImageUpload({
       }
 
       onImageUpdated(publicUrl);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Upload error:', err);
-      setError(err.message || 'Failed to upload image');
+      setError(err instanceof Error ? err.message : 'Failed to upload image');
     } finally {
       setUploading(false);
       // Reset file input
@@ -118,16 +117,15 @@ export function ProductImageUpload({
       // Update product record
       const { error: updateError } = await supabase
         .from('products')
-        // @ts-ignore - Supabase .update() infers 'never' in strict builds
-        .update({ image_url: null })
+        .update({ image_url: null } as never)
         .eq('id', productId);
 
       if (updateError) throw updateError;
 
       onImageUpdated(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Delete error:', err);
-      setError(err.message || 'Failed to delete image');
+      setError(err instanceof Error ? err.message : 'Failed to delete image');
     } finally {
       setDeleting(false);
     }

@@ -3,9 +3,11 @@
 ## Issues Fixed for Vercel Deployment
 
 ### 1. ⚠️ CRITICAL: `cookies()` Async Issue (Next.js 15 Compatibility)
+
 **Problem:** `cookies()` was being used synchronously, causing build failures on Vercel.
 
 **Fixed in:**
+
 - `lib/supabase/server.ts` - Made `createServerClient` async
 - `app/page.tsx` - Added await to `createServerClient()` call
 - `app/api/orders/route.ts` - Added await to `cookies()` calls
@@ -13,62 +15,78 @@
 - `app/auth/callback/route.ts` - Added await to `cookies()` call
 
 ### 2. ⚠️ CRITICAL: Authentication Not Working
+
 **Problem:** Magic link sign-in wasn't persisting session - cookies weren't being set in the response.
 
 **Fixed in:**
+
 - `app/auth/callback/route.ts` - Properly set cookies in NextResponse object
 - Added error handling for failed auth exchanges
 
 **Before:**
+
 ```typescript
-cookieStore.set({ name, value, ...options }) // ❌ Not persisted
+cookieStore.set({ name, value, ...options }); // ❌ Not persisted
 ```
 
 **After:**
+
 ```typescript
-response.cookies.set({ name, value, ...options }) // ✅ Persisted in response
+response.cookies.set({ name, value, ...options }); // ✅ Persisted in response
 ```
 
 ### 3. Dynamic Route Params Type (Next.js 15)
+
 **Problem:** Dynamic route params are now Promises in Next.js 15.
 
 **Fixed in:**
+
 - `app/api/orders/[id]/route.ts` - Changed params type and added await
 
 **Before:**
+
 ```typescript
 { params }: { params: { id: string } }
 ```
 
 **After:**
+
 ```typescript
 { params }: { params: Promise<{ id: string }> }
 const { id } = await params
 ```
 
 ### 4. useSearchParams() Suspense Boundaries
+
 **Problem:** Pages using `useSearchParams()` need Suspense boundaries for static rendering.
 
 **Fixed in:**
+
 - `app/auth/signin/page.tsx` - Wrapped in Suspense
-- `app/auth/verify-otp/page.tsx` - Wrapped in Suspense  
+- `app/auth/verify-otp/page.tsx` - Wrapped in Suspense
 - `app/orders/success/page.tsx` - Wrapped in Suspense
 
 ### 5. TypeScript Type Errors
+
 **Problem:** Supabase type inference issues in admin dashboard.
 
 **Fixed in:**
+
 - `app/admin/page.tsx` - Added `@ts-expect-error` for overly strict types
 - `lib/supabase/client.ts` - Let TypeScript infer return type
 
 ### 6. Missing .env.example
+
 **Problem:** No template for environment variables.
 
 **Created:**
+
 - `.env.example` - Complete template with all required variables
 
 ### 7. Deployment Documentation
+
 **Created:**
+
 - `VERCEL_DEPLOYMENT.md` - Complete step-by-step deployment guide
 - `DEPLOYMENT_FIXES.md` - This file
 
@@ -108,6 +126,7 @@ Your app is now ready to deploy to Vercel! Follow these steps:
 Go to your Supabase Dashboard → Authentication → URL Configuration:
 
 **Add these URLs:**
+
 - Site URL: `https://your-app.vercel.app`
 - Redirect URLs:
   ```
@@ -131,6 +150,7 @@ git push -u origin main
 ```
 
 Then:
+
 1. Go to [vercel.com](https://vercel.com)
 2. Import your repository
 3. Add all environment variables from `.env.example`
@@ -165,16 +185,19 @@ Make sure these are set in Vercel:
 ## 🐛 Common Issues After Deployment
 
 ### Sign-in Still Not Working?
+
 - Check Supabase redirect URLs include your Vercel domain
 - Check browser console for CORS errors
 - Verify environment variables are set in Vercel
 
 ### Build Fails on Vercel?
+
 - Check Vercel build logs
 - Ensure all dependencies are in `package.json`
 - Verify Node.js version compatibility
 
 ### Email Not Sending?
+
 - Verify `RESEND_API_KEY` or SMTP credentials
 - Check Resend dashboard for delivery status
 - Ensure `SMTP_FROM` email is verified

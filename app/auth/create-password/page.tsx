@@ -1,80 +1,82 @@
-'use client'
+'use client';
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { PasswordInput } from '@/components/auth/PasswordInput'
-import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator'
-import { validatePassword } from '@/lib/auth/password'
-import { Loader2 } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { PasswordInput } from '@/components/auth/PasswordInput';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { validatePassword } from '@/lib/auth/password';
+import { Loader2 } from 'lucide-react';
 
 function CreatePasswordForm() {
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [username, setUsername] = useState('');
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectAfter = searchParams?.get('redirect') || '/'
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectAfter = searchParams?.get('redirect') || '/';
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) {
-        router.push('/auth/signup')
-        return
+        router.push('/auth/signup');
+        return;
       }
-      const user = data.user
-      setUsername(user.email || user.phone || 'your account')
-    })
-  }, [router])
+      const user = data.user;
+      setUsername(user.email || user.phone || 'your account');
+    });
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError('');
 
-    const validation = validatePassword(password)
+    const validation = validatePassword(password);
     if (!validation.valid) {
-      setError(validation.errors[0] || 'Invalid password')
-      return
+      setError(validation.errors[0] || 'Invalid password');
+      return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError('Passwords do not match');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const supabase = createClient()
-      const { error: updateError } = await supabase.auth.updateUser({ password })
+      const supabase = createClient();
+      const { error: updateError } = await supabase.auth.updateUser({ password });
 
-      if (updateError) throw updateError
+      if (updateError) throw updateError;
 
       // Update user_profiles - set password as completed
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user?.id) {
         const res = await fetch('/api/auth/complete-password-setup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: user.id }),
-        })
+        });
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || 'Failed to complete setup')
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to complete setup');
         }
       }
 
-      router.push(redirectAfter)
+      router.push(redirectAfter);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to set password')
+      setError(err instanceof Error ? err.message : 'Failed to set password');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -112,7 +114,10 @@ function CreatePasswordForm() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Confirm Password
               </label>
               <PasswordInput
@@ -145,7 +150,7 @@ function CreatePasswordForm() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function CreatePasswordPage() {
@@ -159,5 +164,5 @@ export default function CreatePasswordPage() {
     >
       <CreatePasswordForm />
     </Suspense>
-  )
+  );
 }

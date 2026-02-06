@@ -1,47 +1,47 @@
-'use client'
+'use client';
 
-import { useState, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Loader2 } from 'lucide-react'
+import { useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 function ForgotPasswordForm() {
-  const [identifier, setIdentifier] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
-  const router = useRouter()
+  const [identifier, setIdentifier] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setMessage('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
 
     try {
       const res = await fetch('/api/auth/reset-password-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: identifier.trim() }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to send reset link')
+        throw new Error(data.error || 'Failed to send reset link');
       }
 
       if (data.type === 'email') {
-        setMessage('Password reset link sent! Check your email.')
+        setMessage('Password reset link sent! Check your email.');
       } else {
-        router.push(`/auth/reset-password?phone=${encodeURIComponent(data.phone || identifier)}`)
+        router.push(`/auth/reset-password?phone=${encodeURIComponent(data.phone || identifier)}`);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -102,14 +102,17 @@ function ForgotPasswordForm() {
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">
-            <Link href="/auth/signin" className="font-medium text-primary-600 hover:text-primary-700">
+            <Link
+              href="/auth/signin"
+              className="font-medium text-primary-600 hover:text-primary-700"
+            >
               Back to Sign In
             </Link>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function ForgotPasswordPage() {
@@ -123,5 +126,5 @@ export default function ForgotPasswordPage() {
     >
       <ForgotPasswordForm />
     </Suspense>
-  )
+  );
 }

@@ -20,25 +20,25 @@ This document describes how to log in as an admin and what admins can do in the 
 
 - Click **Sign In**.
 - If the account is an admin, you are redirected to the **Admin Dashboard** at `/admin`.
-- If the account is not an admin, you see: *"Access denied. Admin credentials required."* and are signed out.
+- If the account is not an admin, you see: _"Access denied. Admin credentials required."_ and are signed out.
 
 ### Who Counts as an Admin?
 
 A user is treated as an admin if **either**:
 
-- Their email matches **`NEXT_PUBLIC_ADMIN_EMAIL`** in `.env.local`, or  
+- Their email matches **`NEXT_PUBLIC_ADMIN_EMAIL`** in `.env.local`, or
 - Their profile in the database has **`is_admin = true`** in the `user_profiles` table.
 
 Admin login does **not** require email verification; admins can sign in with email and password only.
 
 ### Troubleshooting Login
 
-| Issue | What to check |
-|-------|----------------|
-| "Invalid email or password" | Correct email/password in Supabase Auth; user exists in **Authentication → Users**. |
+| Issue                                        | What to check                                                                                                        |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| "Invalid email or password"                  | Correct email/password in Supabase Auth; user exists in **Authentication → Users**.                                  |
 | "Access denied. Admin credentials required." | User is not an admin: run the SQL scripts below to promote the user, or set `NEXT_PUBLIC_ADMIN_EMAIL` to this email. |
-| "Too many attempts" | Wait and try again (Supabase rate limiting). |
-| "Connection error" | Network/server and Supabase project status. |
+| "Too many attempts"                          | Wait and try again (Supabase rate limiting).                                                                         |
+| "Connection error"                           | Network/server and Supabase project status.                                                                          |
 
 ---
 
@@ -109,8 +109,8 @@ After logging in at `/admin/login`, admins use the **Admin Dashboard** at **`/ad
   Mark a product as **Available** or **Unavailable** so it can be shown or hidden from the store.
 
 - **Upload product image**  
-  For each product: upload an image (replaces existing if any).  
-  - Allowed: image files.  
+  For each product: upload an image (replaces existing if any).
+  - Allowed: image files.
   - Max size: 5 MB.
 
 - **Update product image**  
@@ -137,8 +137,8 @@ After logging in at `/admin/login`, admins use the **Admin Dashboard** at **`/ad
 
 ## Environment Variable
 
-| Variable | Purpose |
-|----------|--------|
+| Variable                  | Purpose                                                                                                                                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `NEXT_PUBLIC_ADMIN_EMAIL` | Email used as **fallback** to treat a user as admin. If the signed-in user’s email matches this value, they are allowed admin access even without `is_admin` in the database. Set this in `.env.local` (e.g. to your primary admin email). |
 
 ---

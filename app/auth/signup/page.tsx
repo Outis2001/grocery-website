@@ -1,56 +1,59 @@
-'use client'
+'use client';
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { Mail, Phone, Loader2 } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { Mail, Phone, Loader2 } from 'lucide-react';
 
 function SignUpForm() {
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') || '/auth/create-password'
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/auth/create-password';
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
-        router.push(redirect)
+        router.push(redirect);
       }
-    })
-  }, [router, redirect])
+    });
+  }, [router, redirect]);
 
   const formatPhone = (value: string): string => {
-    let formatted = value.trim()
+    let formatted = value.trim();
     if (!formatted.startsWith('+')) {
       if (formatted.startsWith('0')) {
-        formatted = '+94' + formatted.substring(1)
+        formatted = '+94' + formatted.substring(1);
       } else if (formatted.startsWith('94')) {
-        formatted = '+' + formatted
+        formatted = '+' + formatted;
       } else {
-        formatted = '+94' + formatted
+        formatted = '+94' + formatted;
       }
     }
-    return formatted
-  }
+    return formatted;
+  };
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setMessage('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
 
     try {
-      const supabase = createClient()
-      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || window.location.origin).replace(/\/$/, '')
-      const redirectTo = `${baseUrl}/auth/callback?redirect=${encodeURIComponent('/auth/create-password')}`
+      const supabase = createClient();
+      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || window.location.origin).replace(
+        /\/$/,
+        ''
+      );
+      const redirectTo = `${baseUrl}/auth/callback?redirect=${encodeURIComponent('/auth/create-password')}`;
 
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -58,41 +61,43 @@ function SignUpForm() {
           emailRedirectTo: redirectTo,
           shouldCreateUser: true,
         },
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      setMessage('Verification link sent! Please check your email and click the link to continue.')
+      setMessage('Verification link sent! Please check your email and click the link to continue.');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handlePhoneSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setMessage('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
 
     try {
-      const formattedPhone = formatPhone(phone)
-      const supabase = createClient()
+      const formattedPhone = formatPhone(phone);
+      const supabase = createClient();
 
       const { error } = await supabase.auth.signInWithOtp({
         phone: formattedPhone,
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      router.push(`/auth/verify-otp?phone=${encodeURIComponent(formattedPhone)}&redirect=${encodeURIComponent('/auth/create-password')}`)
+      router.push(
+        `/auth/verify-otp?phone=${encodeURIComponent(formattedPhone)}&redirect=${encodeURIComponent('/auth/create-password')}`
+      );
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -111,9 +116,7 @@ function SignUpForm() {
               type="button"
               onClick={() => setAuthMethod('email')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition ${
-                authMethod === 'email'
-                  ? 'bg-white text-primary-600 shadow'
-                  : 'text-gray-600'
+                authMethod === 'email' ? 'bg-white text-primary-600 shadow' : 'text-gray-600'
               }`}
             >
               <Mail className="w-5 h-5" />
@@ -123,9 +126,7 @@ function SignUpForm() {
               type="button"
               onClick={() => setAuthMethod('phone')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition ${
-                authMethod === 'phone'
-                  ? 'bg-white text-primary-600 shadow'
-                  : 'text-gray-600'
+                authMethod === 'phone' ? 'bg-white text-primary-600 shadow' : 'text-gray-600'
               }`}
             >
               <Phone className="w-5 h-5" />
@@ -225,14 +226,17 @@ function SignUpForm() {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/auth/signin" className="font-medium text-primary-600 hover:text-primary-700">
+            <Link
+              href="/auth/signin"
+              className="font-medium text-primary-600 hover:text-primary-700"
+            >
               Sign in
             </Link>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function SignUpPage() {
@@ -246,5 +250,5 @@ export default function SignUpPage() {
     >
       <SignUpForm />
     </Suspense>
-  )
+  );
 }

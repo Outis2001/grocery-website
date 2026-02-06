@@ -19,12 +19,14 @@ Currently, all users (including admins) must go through email or phone verificat
 ## User Stories
 
 ### As an Administrator:
+
 - I want to access `/admin/login` so that I can quickly sign in to the admin dashboard
 - I want to enter my email and password to authenticate without waiting for email verification
 - I want to be redirected to the admin dashboard immediately after successful login
 - I want clear error messages if my credentials are incorrect
 
 ### As a System Administrator:
+
 - I want to create admin accounts manually through Supabase so that I control who has admin access
 - I want to ensure admin accounts are marked to skip verification in the database
 - I want to verify that regular users cannot access the admin login flow
@@ -32,17 +34,20 @@ Currently, all users (including admins) must go through email or phone verificat
 ## Functional Requirements
 
 ### FR1: Admin Login Page
+
 1.1. Create a new page at `/admin/login` dedicated to admin authentication
 1.2. Display a clean, professional login form with:
-  - Email input field (labeled "Admin Email")
-  - Password input field with show/hide toggle
-  - "Sign In" button
-  - Error message display area
-1.3. Include clear branding/heading indicating this is admin access (e.g., "Admin Access")
-1.4. Do NOT include links to signup, forgot password, or other user flows
-1.5. Redirect already-authenticated admins directly to `/admin`
+
+- Email input field (labeled "Admin Email")
+- Password input field with show/hide toggle
+- "Sign In" button
+- Error message display area
+  1.3. Include clear branding/heading indicating this is admin access (e.g., "Admin Access")
+  1.4. Do NOT include links to signup, forgot password, or other user flows
+  1.5. Redirect already-authenticated admins directly to `/admin`
 
 ### FR2: Admin Authentication Logic
+
 2.1. Use Supabase `signInWithPassword` with email + password
 2.2. After successful Supabase authentication, verify the user's email matches `NEXT_PUBLIC_ADMIN_EMAIL`
 2.3. If email matches → redirect to `/admin` dashboard
@@ -51,46 +56,55 @@ Currently, all users (including admins) must go through email or phone verificat
 2.6. Handle rate limiting to prevent brute force attacks (use existing Supabase rate limiting)
 
 ### FR3: Database Schema Updates
+
 3.1. Add `is_admin` boolean column to the `users` table (default: false)
 3.2. Add `skip_verification` boolean column to the `users` table (default: false)
 3.3. Create a database function or manual SQL to mark admin users:
-  - Set `is_admin = true`
-  - Set `skip_verification = true`
-  - Set `email_confirmed_at = now()` if null
-3.4. Add index on `users.is_admin` for faster admin lookups
+
+- Set `is_admin = true`
+- Set `skip_verification = true`
+- Set `email_confirmed_at = now()` if null
+  3.4. Add index on `users.is_admin` for faster admin lookups
 
 ### FR4: Admin Account Creation Process
+
 4.1. Document the manual process for creating admin accounts in Supabase:
-  - Go to Authentication → Users → Add User
-  - Enter admin email and password
-  - Confirm the email immediately
-  - Run SQL to set `is_admin = true` and `skip_verification = true`
-4.2. Create a SQL script (`create-admin-user.sql`) that:
-  - Takes an email parameter
-  - Updates the user record to set admin flags
-  - Confirms the email automatically
-4.3. Document in README.md how to create and manage admin users
+
+- Go to Authentication → Users → Add User
+- Enter admin email and password
+- Confirm the email immediately
+- Run SQL to set `is_admin = true` and `skip_verification = true`
+  4.2. Create a SQL script (`create-admin-user.sql`) that:
+- Takes an email parameter
+- Updates the user record to set admin flags
+- Confirms the email automatically
+  4.3. Document in README.md how to create and manage admin users
 
 ### FR5: Existing Admin Migration
+
 5.1. Create a migration SQL script to update existing admin user (benujith@gmail.com):
-  - Set `is_admin = true`
-  - Set `skip_verification = true`
-  - Set `email_confirmed_at = now()` if not already set
-  - Set `phone_confirmed_at = null` (admins don't need phone verification)
-5.2. Document that this script should be run once during deployment
+
+- Set `is_admin = true`
+- Set `skip_verification = true`
+- Set `email_confirmed_at = now()` if not already set
+- Set `phone_confirmed_at = null` (admins don't need phone verification)
+  5.2. Document that this script should be run once during deployment
 
 ### FR6: Admin Dashboard Access Control
+
 6.1. Update `/admin/page.tsx` to check `is_admin` flag from database instead of only checking email
 6.2. Keep email check as a fallback for backward compatibility
 6.3. If user is not admin → redirect to `/` with error message
 6.4. If user is not authenticated → redirect to `/admin/login?redirect=/admin`
 
 ### FR7: Middleware Updates
+
 7.1. Update `middleware.ts` to recognize `/admin/login` as a public route (no auth required)
 7.2. Update `/admin/*` routes to redirect to `/admin/login` instead of `/auth/signin`
 7.3. Ensure regular user routes still redirect to `/auth/signin`
 
 ### FR8: Error Handling & Security
+
 8.1. Implement rate limiting on admin login attempts (leverage Supabase built-in)
 8.2. Log failed admin login attempts for security monitoring
 8.3. Clear session data on failed admin verification
@@ -111,6 +125,7 @@ Currently, all users (including admins) must go through email or phone verificat
 ## Design Considerations
 
 ### UI/UX Requirements
+
 - Admin login page should have a professional, minimal design
 - Use existing design system components (same input fields, buttons as `/auth/signin`)
 - Color scheme: Consider using a distinct color accent (e.g., darker theme) to visually differentiate admin login from user login
@@ -118,11 +133,13 @@ Currently, all users (including admins) must go through email or phone verificat
 - Mobile responsive design (admins may log in from phones)
 
 ### Component Reuse
+
 - Reuse `<PasswordInput>` component from existing auth pages
 - Use same form styling and layout patterns
 - Reuse error message components
 
 ### Mockup/Layout
+
 ```
 ┌─────────────────────────────────────┐
 │     [Shop Logo]                     │
@@ -152,14 +169,16 @@ Currently, all users (including admins) must go through email or phone verificat
 ## Technical Considerations
 
 ### Dependencies
+
 - **Supabase Auth**: Uses existing `signInWithPassword` method
 - **Next.js 15**: Server-side authentication checks
 - **Middleware**: Route protection and redirection logic
 
 ### Database Schema
+
 ```sql
 -- Add columns to users table
-ALTER TABLE users 
+ALTER TABLE users
 ADD COLUMN is_admin BOOLEAN DEFAULT false,
 ADD COLUMN skip_verification BOOLEAN DEFAULT false;
 
@@ -170,8 +189,8 @@ CREATE INDEX idx_users_is_admin ON users(is_admin) WHERE is_admin = true;
 CREATE OR REPLACE FUNCTION promote_to_admin(user_email TEXT)
 RETURNS void AS $$
 BEGIN
-  UPDATE users 
-  SET 
+  UPDATE users
+  SET
     is_admin = true,
     skip_verification = true,
     email_confirmed_at = COALESCE(email_confirmed_at, now())
@@ -181,6 +200,7 @@ $$ LANGUAGE plpgsql;
 ```
 
 ### Security Considerations
+
 1. **Email Enumeration Prevention**: Use generic error messages
 2. **Rate Limiting**: Leverage Supabase's built-in rate limiting (6 attempts per hour per IP)
 3. **Session Security**: Admin sessions use same secure cookies as regular users
@@ -188,18 +208,20 @@ $$ LANGUAGE plpgsql;
 5. **Audit Logging**: Consider adding admin action logging (future enhancement)
 
 ### Integration Points
+
 - **Existing Auth System**: Works alongside regular user authentication
 - **Admin Dashboard**: Seamless integration with existing `/admin` routes
 - **Environment Variables**: Uses existing `NEXT_PUBLIC_ADMIN_EMAIL` for fallback checks
 
 ### Error Scenarios
-| Scenario | User Experience | Technical Handling |
-|----------|----------------|-------------------|
-| Invalid email/password | "Invalid email or password" | Supabase auth error |
+
+| Scenario                      | User Experience                              | Technical Handling            |
+| ----------------------------- | -------------------------------------------- | ----------------------------- |
+| Invalid email/password        | "Invalid email or password"                  | Supabase auth error           |
 | Non-admin user attempts login | "Access denied. Admin credentials required." | Check `is_admin` flag + email |
-| Network error | "Connection error. Please try again." | Catch fetch/network errors |
-| Admin account not verified | Auto-verify, then log in | Update `email_confirmed_at` |
-| Rate limit exceeded | "Too many attempts. Try again later." | Supabase rate limit error |
+| Network error                 | "Connection error. Please try again."        | Catch fetch/network errors    |
+| Admin account not verified    | Auto-verify, then log in                     | Update `email_confirmed_at`   |
+| Rate limit exceeded           | "Too many attempts. Try again later."        | Supabase rate limit error     |
 
 ## Success Metrics
 
@@ -210,6 +232,7 @@ $$ LANGUAGE plpgsql;
 5. **Admin Satisfaction**: Positive feedback from admin users on improved login experience
 
 ### Measurable Outcomes
+
 - Time to first admin dashboard access after deployment: <30 seconds
 - Number of failed admin login attempts per day: <5 (indicating system is working correctly)
 - Regular user authentication flow remains unaffected (no regression)
@@ -217,26 +240,27 @@ $$ LANGUAGE plpgsql;
 ## Open Questions
 
 1. **Password Complexity Requirements**: Should we enforce specific password complexity rules for admin accounts? (e.g., minimum 12 characters, special characters)
-   - *Recommendation*: Yes, enforce stronger requirements than regular users
+   - _Recommendation_: Yes, enforce stronger requirements than regular users
 
 2. **Admin Session Duration**: Should admin sessions be shorter than regular users for security?
-   - *Current*: Same 12-hour timeout as users
-   - *Alternative*: Consider 4-hour timeout for admins
+   - _Current_: Same 12-hour timeout as users
+   - _Alternative_: Consider 4-hour timeout for admins
 
 3. **Multiple Admins**: How many admin accounts do we expect to support?
-   - *Impact*: If >10 admins, consider building an admin management UI
-   - *Current assumption*: 1-3 admin accounts
+   - _Impact_: If >10 admins, consider building an admin management UI
+   - _Current assumption_: 1-3 admin accounts
 
 4. **Admin Login Monitoring**: Should we send email notifications when admin accounts log in?
-   - *Security consideration*: Helps detect unauthorized access
-   - *Recommendation*: Add in future phase
+   - _Security consideration_: Helps detect unauthorized access
+   - _Recommendation_: Add in future phase
 
 5. **Backward Compatibility**: What happens if `NEXT_PUBLIC_ADMIN_EMAIL` is set but database `is_admin` flag is false?
-   - *Recommendation*: Email check takes precedence (fallback behavior)
+   - _Recommendation_: Email check takes precedence (fallback behavior)
 
 ## Implementation Notes
 
 ### Phase 1: Core Functionality (MVP)
+
 - Create `/admin/login` page
 - Update database schema
 - Implement authentication logic
@@ -244,6 +268,7 @@ $$ LANGUAGE plpgsql;
 - Update middleware and route protection
 
 ### Phase 2: Enhancements (Future)
+
 - Admin password reset flow
 - Email notifications on admin login
 - Admin activity audit log
@@ -251,6 +276,7 @@ $$ LANGUAGE plpgsql;
 - Admin-specific session timeout
 
 ### Testing Checklist
+
 - [ ] Admin can log in with email + password at `/admin/login`
 - [ ] Non-admin users are rejected at admin login
 - [ ] Existing admin account (benujith@gmail.com) works with new flow
@@ -265,6 +291,7 @@ $$ LANGUAGE plpgsql;
 ## Acceptance Criteria
 
 ### Must Have (Launch Blockers)
+
 1. ✅ Admin login page exists at `/admin/login`
 2. ✅ Admins can authenticate with email + password only
 3. ✅ Non-admins cannot access admin dashboard
@@ -273,12 +300,14 @@ $$ LANGUAGE plpgsql;
 6. ✅ Basic error handling and security measures in place
 
 ### Should Have (High Priority)
+
 1. ✅ Professional, clean UI design
 2. ✅ Clear documentation for creating admin users
 3. ✅ SQL scripts for admin management
 4. ✅ Rate limiting on login attempts
 
 ### Nice to Have (Can Be Added Later)
+
 1. Admin login notifications
 2. Audit logging
 3. Custom admin session duration

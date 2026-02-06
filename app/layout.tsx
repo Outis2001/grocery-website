@@ -1,22 +1,19 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Ambalangoda Grocery - Fresh Essentials Delivered",
-  description: "Order essential grocery items online in Ambalangoda. Pickup or home delivery within 5km radius.",
-  keywords: "grocery, Ambalangoda, Sri Lanka, online shopping, delivery, pickup",
+  title: 'Ambalangoda Grocery - Fresh Essentials Delivered',
+  description:
+    'Order essential grocery items online in Ambalangoda. Pickup or home delivery within 5km radius.',
+  keywords: 'grocery, Ambalangoda, Sri Lanka, online shopping, delivery, pickup',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>

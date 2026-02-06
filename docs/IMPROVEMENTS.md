@@ -11,6 +11,7 @@ This document outlines recommended improvements for the Ambalangoda Grocery webs
 ### 1. Security Enhancements
 
 #### Critical: Environment Variables Security
+
 - **Issue**: `.env.local` contains sensitive credentials that could be exposed
 - **Actions**:
   - ✅ Verify `.env.local` is in `.gitignore`
@@ -22,6 +23,7 @@ This document outlines recommended improvements for the Ambalangoda Grocery webs
   - 💡 Consider using environment variable management tools (Doppler, Vault)
 
 #### Secure Admin Access
+
 - Review and audit admin access patterns
 - Implement rate limiting for admin login
 - Add audit logs for admin actions
@@ -29,31 +31,34 @@ This document outlines recommended improvements for the Ambalangoda Grocery webs
 ### 2. Type Safety Issues
 
 **Current Problems**:
+
 - `Header.tsx` uses `any` for user type (line 11)
 - `CartDrawer.tsx` uses `any` for user type (line 17)
 - `ProductManagement.tsx` uses `@ts-ignore` directives (lines 86, 71, 125)
 
 **Solutions**:
+
 ```typescript
 // Create proper type definitions in lib/supabase/types.ts
-import { User } from '@supabase/supabase-js'
+import { User } from '@supabase/supabase-js';
 
 export interface UserProfile {
-  id: string
-  email: string
-  phone: string | null
-  is_admin: boolean
-  skip_verification: boolean
-  created_at: string
-  updated_at: string
+  id: string;
+  email: string;
+  phone: string | null;
+  is_admin: boolean;
+  skip_verification: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthUser extends User {
-  profile?: UserProfile
+  profile?: UserProfile;
 }
 ```
 
 **Tasks**:
+
 - [ ] Define proper Supabase user types
 - [ ] Remove all `any` types from components
 - [ ] Remove all `@ts-ignore` directives
@@ -66,32 +71,38 @@ export interface AuthUser extends User {
 **Recommended Setup**:
 
 #### Unit Tests
+
 ```bash
 npm install -D vitest @testing-library/react @testing-library/jest-dom
 npm install -D @testing-library/user-event
 ```
 
 **Priority Test Coverage**:
+
 - [ ] Utility functions (cart calculations, distance calculations, formatting)
 - [ ] Components (ProductCard, CartDrawer, LocationPicker)
 - [ ] API routes (order creation, product updates)
 
 #### Integration Tests
+
 - [ ] Authentication flows
 - [ ] Checkout process
 - [ ] Admin order management
 
 #### E2E Tests
+
 ```bash
 npm install -D @playwright/test
 ```
 
 **Critical User Flows**:
+
 - [ ] Browse products → Add to cart → Checkout → Place order
 - [ ] Admin login → View orders → Update status
 - [ ] User signup → Verify email → Login → Order
 
 **Add to `package.json`**:
+
 ```json
 {
   "scripts": {
@@ -107,17 +118,20 @@ npm install -D @playwright/test
 ### 4. Error Handling
 
 **Current Issues**:
+
 - Using `alert()` for errors (poor UX)
 - No centralized error handling
 - Inconsistent error messages across components
 
 **Solutions**:
+
 - [ ] Create a toast notification system
 - [ ] Implement error boundary components
 - [ ] Standardize error messages
 - [ ] Add retry mechanisms for failed requests
 
 **Recommended Libraries**:
+
 - `sonner` - Beautiful toast notifications
 - `react-error-boundary` - Error boundaries
 
@@ -128,11 +142,13 @@ npm install -D @playwright/test
 ### 5. Code Quality Tools
 
 #### Prettier - Code Formatting
+
 ```bash
 npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ```
 
 **Create `.prettierrc.json`**:
+
 ```json
 {
   "semi": true,
@@ -145,12 +161,14 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ```
 
 #### Pre-commit Hooks
+
 ```bash
 npm install -D husky lint-staged
 npx husky install
 ```
 
 **Add to `package.json`**:
+
 ```json
 {
   "scripts": {
@@ -159,25 +177,19 @@ npx husky install
     "format:check": "prettier --check ."
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,css}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md,css}": ["prettier --write"]
   }
 }
 ```
 
 #### ESLint Configuration
+
 **Create `.eslintrc.json`**:
+
 ```json
 {
-  "extends": [
-    "next/core-web-vitals",
-    "prettier"
-  ],
+  "extends": ["next/core-web-vitals", "prettier"],
   "rules": {
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
@@ -194,32 +206,37 @@ npx husky install
 **Create `components/ui/` directory** with:
 
 ##### Button Component (`components/ui/Button.tsx`)
+
 ```typescript
 interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
-  loading?: boolean
-  disabled?: boolean
-  children: React.ReactNode
-  onClick?: () => void
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
 }
 ```
 
 ##### Input Component (`components/ui/Input.tsx`)
+
 - Text input with error states
 - Consistent styling
 - Proper accessibility
 
 ##### Modal Component (`components/ui/Modal.tsx`)
+
 - Reusable dialog component
 - Backdrop with proper focus management
 - Keyboard navigation (Esc to close)
 
 ##### LoadingSpinner Component (`components/ui/LoadingSpinner.tsx`)
+
 - Consistent loading states
 - Size variants
 
 ##### Toast Component (`components/ui/Toast.tsx`)
+
 - Success, error, warning, info variants
 - Auto-dismiss functionality
 - Queue management
@@ -227,12 +244,14 @@ interface ButtonProps {
 #### Extract Reusable Components
 
 **QuantitySelector Component** (`components/ui/QuantitySelector.tsx`)
+
 - Currently duplicated in ProductCard and CartDrawer
 - Should have increment/decrement buttons
 - Min/max validation
 - Disabled state
 
 **Tasks**:
+
 - [ ] Create `components/ui/` directory
 - [ ] Build Button component with variants
 - [ ] Build Input component
@@ -243,6 +262,7 @@ interface ButtonProps {
 - [ ] Update existing components to use new UI components
 
 #### Consider UI Library
+
 - **shadcn/ui** - Copy-paste components, full customization
 - **Radix UI** - Unstyled accessible primitives
 - **Headless UI** - Tailwind-optimized components
@@ -250,6 +270,7 @@ interface ButtonProps {
 ### 7. State Management
 
 **Current Issues**:
+
 - Cart state in localStorage + custom events
 - No centralized state management
 - State updates scattered across components
@@ -257,31 +278,43 @@ interface ButtonProps {
 **Solutions**:
 
 #### Option 1: Custom React Hook (Recommended for current size)
+
 ```typescript
 // lib/hooks/useCart.ts
 export function useCart() {
-  const [items, setItems] = useState<CartItem[]>([])
-  
-  const addItem = (product: Product, quantity: number) => { /* ... */ }
-  const removeItem = (productId: string) => { /* ... */ }
-  const updateQuantity = (productId: string, quantity: number) => { /* ... */ }
-  const clearCart = () => { /* ... */ }
-  
-  return { items, addItem, removeItem, updateQuantity, clearCart }
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  const addItem = (product: Product, quantity: number) => {
+    /* ... */
+  };
+  const removeItem = (productId: string) => {
+    /* ... */
+  };
+  const updateQuantity = (productId: string, quantity: number) => {
+    /* ... */
+  };
+  const clearCart = () => {
+    /* ... */
+  };
+
+  return { items, addItem, removeItem, updateQuantity, clearCart };
 }
 ```
 
 #### Option 2: React Context
+
 - Good for medium-sized apps
 - Avoid prop drilling
 - Central state management
 
 #### Option 3: Zustand (if app grows)
+
 - Lightweight state management
 - No boilerplate
 - DevTools support
 
 **Tasks**:
+
 - [ ] Create `useCart()` custom hook
 - [ ] Create `useAuth()` custom hook
 - [ ] Centralize cart logic
@@ -303,53 +336,54 @@ on:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run linter
         run: npm run lint
-      
+
       - name: Type check
         run: npx tsc --noEmit
-      
+
       - name: Run tests
         run: npm test
-      
+
       - name: Build
         run: npm run build
 
   e2e-tests:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright
         run: npx playwright install --with-deps
-      
+
       - name: Run E2E tests
         run: npm run test:e2e
 ```
 
 **Additional Workflows**:
+
 - [ ] Automated deployment on merge to main
 - [ ] PR preview deployments (Vercel)
 - [ ] Dependency updates (Dependabot)
@@ -358,6 +392,7 @@ jobs:
 ### 9. Performance Optimization
 
 #### Image Optimization
+
 - [ ] Replace `<img>` tags with Next.js `<Image>` component
 - [ ] Add image loading states
 - [ ] Implement lazy loading for product images
@@ -365,23 +400,27 @@ jobs:
 - [ ] Consider WebP format with fallbacks
 
 #### Code Splitting
+
 - [ ] Lazy load admin components
 - [ ] Dynamic import for heavy libraries (Leaflet)
 - [ ] Split vendor bundles
 
 #### Data Fetching
+
 - [ ] Implement SWR or React Query for caching
 - [ ] Add stale-while-revalidate strategy
 - [ ] Prefetch product data on hover
 - [ ] Optimize Supabase queries (select only needed columns)
 
 #### Performance Monitoring
+
 - [ ] Run Lighthouse audit
 - [ ] Optimize Core Web Vitals
 - [ ] Add bundle analyzer
 - [ ] Monitor bundle size
 
 **Add to `package.json`**:
+
 ```json
 {
   "scripts": {
@@ -394,11 +433,13 @@ jobs:
 ### 10. Accessibility (a11y)
 
 **Current Issues**:
+
 - Some buttons lack ARIA labels
 - Missing keyboard navigation in some components
 - No skip-to-content link
 
 **Improvements**:
+
 - [ ] Add ARIA labels to all interactive elements
 - [ ] Ensure all images have alt text
 - [ ] Add keyboard navigation support
@@ -410,6 +451,7 @@ jobs:
 - [ ] Add form field labels and error announcements
 
 **Tools**:
+
 - `eslint-plugin-jsx-a11y` - Accessibility linting
 - `@axe-core/react` - Runtime accessibility testing
 - Lighthouse accessibility audit
@@ -429,6 +471,7 @@ npm install next-intl
 ```
 
 **Structure**:
+
 ```
 messages/
 ├── en.json
@@ -437,6 +480,7 @@ messages/
 ```
 
 **Tasks**:
+
 - [ ] Install next-intl
 - [ ] Create translation files
 - [ ] Add language switcher in header
@@ -447,19 +491,23 @@ messages/
 ### 12. Analytics & Monitoring
 
 #### Analytics
+
 **Options**:
+
 - Vercel Analytics (built-in)
 - Google Analytics 4
 - Plausible (privacy-focused)
 - Umami (self-hosted)
 
 **Tasks**:
+
 - [ ] Add analytics provider
 - [ ] Track key events (page views, add to cart, checkout, orders)
 - [ ] Set up conversion funnels
 - [ ] Monitor cart abandonment rate
 
 #### Error Tracking
+
 **Recommended: Sentry**
 
 ```bash
@@ -467,18 +515,21 @@ npm install @sentry/nextjs
 ```
 
 **Benefits**:
+
 - Real-time error reporting
 - Source maps support
 - User context and breadcrumbs
 - Performance monitoring
 
 **Tasks**:
+
 - [ ] Set up Sentry account
 - [ ] Add Sentry to project
 - [ ] Configure error boundaries
 - [ ] Set up alerts
 
 #### Performance Monitoring
+
 - [ ] Track Web Vitals
 - [ ] Monitor API response times
 - [ ] Set up uptime monitoring (UptimeRobot, Better Uptime)
@@ -488,6 +539,7 @@ npm install @sentry/nextjs
 #### Developer Documentation
 
 **CONTRIBUTING.md**:
+
 - [ ] How to set up local environment
 - [ ] Coding standards and conventions
 - [ ] Git workflow (branching strategy)
@@ -495,6 +547,7 @@ npm install @sentry/nextjs
 - [ ] Testing requirements
 
 **ARCHITECTURE.md**:
+
 - [ ] System architecture diagram
 - [ ] Database schema documentation
 - [ ] API endpoints reference
@@ -502,18 +555,21 @@ npm install @sentry/nextjs
 - [ ] Deployment architecture
 
 **API.md**:
+
 - [ ] Document all API routes
 - [ ] Request/response examples
 - [ ] Error codes and messages
 - [ ] Rate limiting information
 
 **CODE_STYLE.md**:
+
 - [ ] TypeScript conventions
 - [ ] Component structure guidelines
 - [ ] File naming conventions
 - [ ] Import order standards
 
 #### Code Documentation
+
 - [ ] Add JSDoc comments to complex functions
 - [ ] Document custom hooks
 - [ ] Add inline comments for complex logic
@@ -522,6 +578,7 @@ npm install @sentry/nextjs
 ### 14. Database Improvements
 
 #### Migrations Management
+
 ```bash
 # Install Supabase CLI
 npm install -g supabase
@@ -530,12 +587,14 @@ supabase db pull
 ```
 
 **Tasks**:
+
 - [ ] Set up Supabase CLI for migrations
 - [ ] Version control all schema changes
 - [ ] Add migration scripts
 - [ ] Document rollback procedures
 
 #### Database Optimization
+
 - [ ] Add indexes on frequently queried columns:
   - `orders.user_id`
   - `orders.status`
@@ -547,7 +606,9 @@ supabase db pull
 - [ ] Set up automatic backups
 
 #### Audit Logging
+
 **Create audit log table**:
+
 ```sql
 CREATE TABLE audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -562,6 +623,7 @@ CREATE TABLE audit_logs (
 ```
 
 **Tasks**:
+
 - [ ] Create audit_logs table
 - [ ] Add triggers for admin actions
 - [ ] Create audit log viewer in admin panel
@@ -569,32 +631,41 @@ CREATE TABLE audit_logs (
 ### 15. Feature Enhancements
 
 #### Real-time Order Notifications
+
 ```typescript
 // Use Supabase Realtime
 supabase
   .channel('orders')
-  .on('postgres_changes', {
-    event: 'INSERT',
-    schema: 'public',
-    table: 'orders'
-  }, payload => {
-    // Notify admin of new order
-  })
-  .subscribe()
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'orders',
+    },
+    (payload) => {
+      // Notify admin of new order
+    }
+  )
+  .subscribe();
 ```
 
 **Tasks**:
+
 - [ ] Implement Supabase Realtime
 - [ ] Add desktop notifications for new orders
 - [ ] Add sound notification option
 - [ ] Show real-time order count in admin panel
 
 #### Customer Reviews System
+
 **New Tables**:
+
 - `product_reviews` (rating, comment, user_id, product_id)
 - `review_images` (optional photos)
 
 **Features**:
+
 - [ ] Star rating system (1-5 stars)
 - [ ] Written reviews
 - [ ] Admin moderation
@@ -602,20 +673,25 @@ supabase
 - [ ] Display average rating on product cards
 
 #### Wishlist Feature
+
 **New Table**: `wishlists`
 
 **Features**:
+
 - [ ] Add/remove products from wishlist
 - [ ] View saved items
 - [ ] Share wishlist
 - [ ] Move wishlist items to cart
 
 #### Promotions & Discounts
+
 **New Tables**:
+
 - `promo_codes` (code, discount_type, value, expiry)
 - `promotions` (banner_text, active, start_date, end_date)
 
 **Features**:
+
 - [ ] Apply promo codes at checkout
 - [ ] Percentage or fixed amount discounts
 - [ ] Promotional banners on homepage
@@ -623,12 +699,15 @@ supabase
 - [ ] Buy X get Y offers
 
 #### Inventory Management
+
 **Extend products table**:
+
 - `stock_quantity`
 - `low_stock_threshold`
 - `reorder_point`
 
 **Features**:
+
 - [ ] Track product stock levels
 - [ ] Low stock alerts for admin
 - [ ] Out-of-stock indicators
@@ -636,7 +715,9 @@ supabase
 - [ ] Inventory history log
 
 #### Sales Analytics Dashboard
+
 **Metrics**:
+
 - Total sales (daily, weekly, monthly)
 - Order volume trends
 - Top-selling products
@@ -645,6 +726,7 @@ supabase
 - Delivery vs pickup ratio
 
 **Visualizations**:
+
 - [ ] Charts using recharts or Chart.js
 - [ ] Revenue over time
 - [ ] Category breakdown
@@ -652,7 +734,9 @@ supabase
 - [ ] Customer retention rate
 
 #### Advanced Search
+
 **Features**:
+
 - [ ] Full-text search for products
 - [ ] Search by category
 - [ ] Price range filters
@@ -660,13 +744,16 @@ supabase
 - [ ] Search suggestions/autocomplete
 
 #### Payment Integration
+
 **Options**:
+
 - Stripe (international)
 - PayHere (Sri Lanka)
 - iPay (Sri Lanka)
 - Cash on delivery (existing)
 
 **Tasks**:
+
 - [ ] Research payment providers
 - [ ] Implement payment gateway
 - [ ] Add payment status tracking
@@ -678,11 +765,13 @@ supabase
 Consider building a native mobile app:
 
 **Options**:
+
 - React Native with Expo
 - Progressive Web App (PWA)
 - Capacitor (web to native)
 
 **Benefits**:
+
 - Push notifications
 - Better mobile performance
 - App store presence
@@ -691,6 +780,7 @@ Consider building a native mobile app:
 ### 17. SEO Optimization
 
 #### Meta Tags & Open Graph
+
 ```typescript
 // app/layout.tsx
 export const metadata = {
@@ -699,16 +789,18 @@ export const metadata = {
   openGraph: {
     images: ['/og-image.jpg'],
   },
-}
+};
 ```
 
 **Tasks**:
+
 - [ ] Add proper meta tags to all pages
 - [ ] Create Open Graph images
 - [ ] Add Twitter Card meta tags
 - [ ] Implement dynamic meta tags for products
 
 #### Structured Data (JSON-LD)
+
 ```json
 {
   "@context": "https://schema.org",
@@ -721,12 +813,14 @@ export const metadata = {
 ```
 
 **Tasks**:
+
 - [ ] Add Product schema
 - [ ] Add LocalBusiness schema
 - [ ] Add BreadcrumbList schema
 - [ ] Test with Google Rich Results Test
 
 #### Additional SEO
+
 - [ ] Create and submit `sitemap.xml`
 - [ ] Create `robots.txt`
 - [ ] Optimize Core Web Vitals
@@ -737,7 +831,9 @@ export const metadata = {
 ### 18. Development Experience
 
 #### VS Code Workspace Settings
+
 **Create `.vscode/settings.json`**:
+
 ```json
 {
   "editor.formatOnSave": true,
@@ -750,6 +846,7 @@ export const metadata = {
 ```
 
 **Create `.vscode/extensions.json`**:
+
 ```json
 {
   "recommendations": [
@@ -761,7 +858,9 @@ export const metadata = {
 ```
 
 #### Development Scripts
+
 **Add to `package.json`**:
+
 ```json
 {
   "scripts": {
@@ -776,22 +875,26 @@ export const metadata = {
 ```
 
 #### Storybook
+
 ```bash
 npx storybook@latest init
 ```
 
 **Benefits**:
+
 - Component documentation
 - Visual testing
 - Isolated development
 - Design system documentation
 
 #### Local Supabase
+
 ```bash
 supabase start
 ```
 
 **Benefits**:
+
 - No need for internet
 - Fast development
 - Free during development
@@ -802,6 +905,7 @@ supabase start
 ## 📋 Implementation Priority Matrix
 
 ### Phase 1: Foundation (Week 1-2)
+
 1. ✅ Security: Rotate exposed credentials
 2. 🔧 Fix TypeScript type safety issues
 3. 🎨 Add Prettier + ESLint configuration
@@ -809,6 +913,7 @@ supabase start
 5. 🧪 Set up testing infrastructure (Vitest)
 
 ### Phase 2: Quality & Testing (Week 3-4)
+
 1. ✅ Add pre-commit hooks (Husky + lint-staged)
 2. 🧪 Write unit tests for utilities
 3. 🧪 Write component tests
@@ -816,6 +921,7 @@ supabase start
 5. 🔄 Set up CI/CD pipeline
 
 ### Phase 3: Performance & UX (Week 5-6)
+
 1. 🖼️ Optimize images (Next.js Image component)
 2. ⚡ Implement data caching (SWR or React Query)
 3. ♿ Accessibility improvements
@@ -823,6 +929,7 @@ supabase start
 5. 🐛 Set up Sentry for error tracking
 
 ### Phase 4: Features & Scale (Week 7-8)
+
 1. 🌐 Implement i18n (trilingual support)
 2. 🔔 Real-time order notifications
 3. ⭐ Customer reviews system
@@ -830,6 +937,7 @@ supabase start
 5. 🔍 Advanced product search
 
 ### Phase 5: Advanced Features (Week 9-10)
+
 1. 💳 Payment gateway integration
 2. 📦 Inventory management
 3. 🎁 Promotions and discount system
@@ -856,19 +964,23 @@ supabase start
 ## 📚 Resources & Learning
 
 ### Testing
+
 - [Vitest Documentation](https://vitest.dev/)
 - [Testing Library](https://testing-library.com/)
 - [Playwright](https://playwright.dev/)
 
 ### Performance
+
 - [Next.js Performance](https://nextjs.org/docs/app/building-your-application/optimizing)
 - [Web.dev Performance](https://web.dev/performance/)
 
 ### Accessibility
+
 - [MDN Accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
 - [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 
 ### State Management
+
 - [SWR](https://swr.vercel.app/)
 - [React Query](https://tanstack.com/query/latest)
 - [Zustand](https://github.com/pmndrs/zustand)
@@ -880,12 +992,14 @@ supabase start
 Use this checklist to track implementation progress:
 
 ### High Priority
+
 - [ ] Rotate exposed API credentials
 - [ ] Fix all TypeScript type issues
 - [ ] Set up testing infrastructure
 - [ ] Implement toast notification system
 
 ### Medium Priority
+
 - [ ] Add Prettier and ESLint config
 - [ ] Create shared UI components
 - [ ] Set up pre-commit hooks
@@ -894,6 +1008,7 @@ Use this checklist to track implementation progress:
 - [ ] Accessibility improvements
 
 ### Nice to Have
+
 - [ ] Add internationalization (i18n)
 - [ ] Set up analytics and monitoring
 - [ ] Create comprehensive documentation
@@ -908,6 +1023,7 @@ Use this checklist to track implementation progress:
 ## 🤝 Contributing
 
 When implementing improvements, please:
+
 1. Create a new branch for each improvement
 2. Write tests for new features
 3. Update documentation

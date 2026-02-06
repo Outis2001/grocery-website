@@ -1,13 +1,13 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: req.headers,
     },
-  })
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,81 +15,81 @@ export async function middleware(req: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return req.cookies.get(name)?.value
+          return req.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
           req.cookies.set({
             name,
             value,
             ...options,
-          })
+          });
           response = NextResponse.next({
             request: {
               headers: req.headers,
             },
-          })
+          });
           response.cookies.set({
             name,
             value,
             ...options,
-          })
+          });
         },
         remove(name: string, options: any) {
           req.cookies.set({
             name,
             value: '',
             ...options,
-          })
+          });
           response = NextResponse.next({
             request: {
               headers: req.headers,
             },
-          })
+          });
           response.cookies.set({
             name,
             value: '',
             ...options,
-          })
+          });
         },
       },
     }
-  )
+  );
 
   let {
     data: { session },
-  } = await supabase.auth.getSession()
+  } = await supabase.auth.getSession();
 
   // Refresh session if close to expiry (sliding window - 12 hour timeout)
-  const ONE_HOUR = 60 * 60
+  const ONE_HOUR = 60 * 60;
   if (session?.expires_at) {
-    const expiresAt = session.expires_at
-    const timeLeft = expiresAt - Math.floor(Date.now() / 1000)
+    const expiresAt = session.expires_at;
+    const timeLeft = expiresAt - Math.floor(Date.now() / 1000);
     if (timeLeft < ONE_HOUR && timeLeft > 0) {
-      const { data: refreshed } = await supabase.auth.refreshSession()
+      const { data: refreshed } = await supabase.auth.refreshSession();
       if (refreshed.session) {
-        session = refreshed.session
+        session = refreshed.session;
       }
     }
   }
 
   // Protected routes that require authentication
-  const pathname = req.nextUrl.pathname
-  const isAdminLoginPage = pathname === '/admin/login' || pathname.startsWith('/admin/login/')
-  const protectedPaths = ['/checkout', '/orders', '/admin']
-  const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path))
-  const isCreatePassword = req.nextUrl.pathname === '/auth/create-password'
+  const pathname = req.nextUrl.pathname;
+  const isAdminLoginPage = pathname === '/admin/login' || pathname.startsWith('/admin/login/');
+  const protectedPaths = ['/checkout', '/orders', '/admin'];
+  const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
+  const isCreatePassword = req.nextUrl.pathname === '/auth/create-password';
 
   // /admin/login is public; other protected routes require session
   if (isProtectedPath && !session) {
     if (pathname.startsWith('/admin') && !isAdminLoginPage) {
-      const redirectUrl = new URL('/admin/login', req.url)
-      redirectUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(redirectUrl)
+      const redirectUrl = new URL('/admin/login', req.url);
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
     if (pathname.startsWith('/checkout') || pathname.startsWith('/orders')) {
-      const redirectUrl = new URL('/auth/signin', req.url)
-      redirectUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(redirectUrl)
+      const redirectUrl = new URL('/auth/signin', req.url);
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
@@ -99,18 +99,18 @@ export async function middleware(req: NextRequest) {
       .from('user_profiles')
       .select('requires_password_setup')
       .eq('user_id', session.user.id)
-      .single()
+      .single();
 
     if (profile?.requires_password_setup) {
-      const redirectUrl = new URL('/auth/create-password', req.url)
-      redirectUrl.searchParams.set('redirect', req.nextUrl.pathname)
-      return NextResponse.redirect(redirectUrl)
+      const redirectUrl = new URL('/auth/create-password', req.url);
+      redirectUrl.searchParams.set('redirect', req.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
-  return response
+  return response;
 }
 
 export const config = {
   matcher: ['/checkout/:path*', '/orders/:path*', '/admin/:path*'],
-}
+};

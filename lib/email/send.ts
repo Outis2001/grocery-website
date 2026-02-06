@@ -1,8 +1,8 @@
-import { Resend } from 'resend'
-import nodemailer from 'nodemailer'
-import { formatCurrency } from '../utils/format'
+import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import { formatCurrency } from '../utils/format';
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // SMTP transporter (fallback)
 const transporter = nodemailer.createTransport({
@@ -13,33 +13,33 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-})
+});
 
 interface OrderEmailData {
   order: {
-    order_number: string
-    customer_name: string
-    customer_phone: string
-    fulfillment_type: string
-    delivery_address?: string | null
-    subtotal: number
-    delivery_fee: number
-    total: number
+    order_number: string;
+    customer_name: string;
+    customer_phone: string;
+    fulfillment_type: string;
+    delivery_address?: string | null;
+    subtotal: number;
+    delivery_fee: number;
+    total: number;
     items: Array<{
-      product_name: string
-      quantity: number
-      price_at_purchase: number
-      subtotal: number
-    }>
-    customer_notes?: string | null
-  }
-  to: string
-  toAdmin: boolean
+      product_name: string;
+      quantity: number;
+      price_at_purchase: number;
+      subtotal: number;
+    }>;
+    customer_notes?: string | null;
+  };
+  to: string;
+  toAdmin: boolean;
 }
 
 function generateOrderEmailHTML(data: OrderEmailData): string {
-  const { order, toAdmin } = data
-  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery'
+  const { order, toAdmin } = data;
+  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery';
 
   return `
     <!DOCTYPE html>
@@ -128,24 +128,32 @@ function generateOrderEmailHTML(data: OrderEmailData): string {
               </tr>
             </thead>
             <tbody>
-              ${order.items.map((item) => `
+              ${order.items
+                .map(
+                  (item) => `
                 <tr>
                   <td>${item.product_name}</td>
                   <td>${item.quantity}</td>
                   <td>${formatCurrency(item.price_at_purchase)}</td>
                   <td>${formatCurrency(item.subtotal)}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join('')}
               <tr>
                 <td colspan="3" style="text-align: right;"><strong>Subtotal:</strong></td>
                 <td><strong>${formatCurrency(order.subtotal)}</strong></td>
               </tr>
-              ${order.delivery_fee > 0 ? `
+              ${
+                order.delivery_fee > 0
+                  ? `
                 <tr>
                   <td colspan="3" style="text-align: right;"><strong>Delivery Fee:</strong></td>
                   <td><strong>${formatCurrency(order.delivery_fee)}</strong></td>
                 </tr>
-              ` : ''}
+              `
+                  : ''
+              }
               <tr class="total-row">
                 <td colspan="3" style="text-align: right;">TOTAL:</td>
                 <td>${formatCurrency(order.total)}</td>
@@ -153,13 +161,17 @@ function generateOrderEmailHTML(data: OrderEmailData): string {
             </tbody>
           </table>
 
-          ${!toAdmin ? `
+          ${
+            !toAdmin
+              ? `
             <p style="margin-top: 20px;">
               <strong>Thank you for your order!</strong><br>
               We'll prepare your items and ${order.fulfillment_type === 'pickup' ? 'notify you when ready for pickup' : 'deliver them to your address'}.
             </p>
             <p>Payment: Cash on ${order.fulfillment_type === 'pickup' ? 'pickup' : 'delivery'}</p>
-          ` : ''}
+          `
+              : ''
+          }
         </div>
 
         <div class="footer">
@@ -170,17 +182,17 @@ function generateOrderEmailHTML(data: OrderEmailData): string {
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
 export async function sendOrderEmail(data: OrderEmailData): Promise<void> {
-  const { order, to, toAdmin } = data
-  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery'
+  const { order, to, toAdmin } = data;
+  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery';
   const subject = toAdmin
     ? `New Order #${order.order_number} - ${shopName}`
-    : `Order Confirmation #${order.order_number}`
+    : `Order Confirmation #${order.order_number}`;
 
-  const html = generateOrderEmailHTML(data)
+  const html = generateOrderEmailHTML(data);
 
   try {
     // Try Resend first (if configured)
@@ -190,9 +202,9 @@ export async function sendOrderEmail(data: OrderEmailData): Promise<void> {
         to,
         subject,
         html,
-      })
-      console.log('Email sent via Resend')
-      return
+      });
+      console.log('Email sent via Resend');
+      return;
     }
 
     // Fallback to SMTP
@@ -202,21 +214,21 @@ export async function sendOrderEmail(data: OrderEmailData): Promise<void> {
         to,
         subject,
         html,
-      })
-      console.log('Email sent via SMTP')
-      return
+      });
+      console.log('Email sent via SMTP');
+      return;
     }
 
-    console.warn('No email service configured')
+    console.warn('No email service configured');
   } catch (error) {
-    console.error('Email send error:', error)
-    throw error
+    console.error('Email send error:', error);
+    throw error;
   }
 }
 
 /** Password reset email (link expires in 5 minutes) */
 export async function sendPasswordResetEmail(to: string, resetLink: string): Promise<void> {
-  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery'
+  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery';
 
   const html = `
     <!DOCTYPE html>
@@ -267,7 +279,7 @@ export async function sendPasswordResetEmail(to: string, resetLink: string): Pro
       </div>
     </body>
     </html>
-  `
+  `;
 
   try {
     if (resend && process.env.SMTP_FROM) {
@@ -276,8 +288,8 @@ export async function sendPasswordResetEmail(to: string, resetLink: string): Pro
         to,
         subject: `Reset Your Password - ${shopName}`,
         html,
-      })
-      return
+      });
+      return;
     }
     if (process.env.SMTP_HOST && process.env.SMTP_USER) {
       await transporter.sendMail({
@@ -285,12 +297,12 @@ export async function sendPasswordResetEmail(to: string, resetLink: string): Pro
         to,
         subject: `Reset Your Password - ${shopName}`,
         html,
-      })
-      return
+      });
+      return;
     }
-    throw new Error('No email service configured')
+    throw new Error('No email service configured');
   } catch (error) {
-    console.error('Password reset email error:', error)
-    throw error
+    console.error('Password reset email error:', error);
+    throw error;
   }
 }

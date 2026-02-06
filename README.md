@@ -5,11 +5,12 @@ A modern, mobile-first grocery e-commerce platform built for Sri Lankan business
 ## ✨ Features
 
 ### Customer Features
+
 - **Browse Products**: View 30+ essential grocery items organized by category
 - **Smart Cart**: Add items with quantity controls, see cart summary
 - **Flexible Fulfillment**: Choose between store pickup or home delivery
 - **Location-Based Delivery**: Interactive map to select delivery location with 5km radius check
-- **Dynamic Pricing**: 
+- **Dynamic Pricing**:
   - Free delivery on orders over LKR 5,000
   - Base fee (LKR 100) + per km rate (LKR 40/km)
   - Optional express delivery (+LKR 150)
@@ -18,6 +19,7 @@ A modern, mobile-first grocery e-commerce platform built for Sri Lankan business
 - **WhatsApp Integration**: Send order details directly to shop via WhatsApp
 
 ### Admin Features
+
 - **Order Dashboard**: View all orders with filtering and search
 - **Status Management**: Update order status (pending → confirmed → packing → ready → dispatched → completed)
 - **Print Invoices**: Generate printable invoices for orders
@@ -25,6 +27,7 @@ A modern, mobile-first grocery e-commerce platform built for Sri Lankan business
 - **Real-time Updates**: Orders and products sync automatically
 
 ### Design & UX
+
 - **Mobile-First**: Optimized for Sri Lankan mobile users
 - **Organic Theme**: Fresh green & sun-ripened yellow color palette
 - **Trilingual Ready**: Structure supports English, Sinhala, and Tamil
@@ -160,16 +163,18 @@ In your Supabase dashboard:
      - `https://your-app.vercel.app/auth/callback` (production)
      - `http://localhost:3000/auth/reset-password` (password reset)
      - `https://your-app.vercel.app/auth/reset-password` (password reset prod)
-   If the magic link sends you to localhost after deploying, set **Site URL** to your Vercel URL and ensure the Vercel callback URL is in **Redirect URLs**.
+       If the magic link sends you to localhost after deploying, set **Site URL** to your Vercel URL and ensure the Vercel callback URL is in **Redirect URLs**.
 
 ### 6. Get Email Credentials
 
 **Option A: Resend (Recommended)**
+
 1. Sign up at [resend.com](https://resend.com)
 2. Create an API key
 3. Add to `.env.local`: `RESEND_API_KEY=re_xxxxx`
 
 **Option B: Gmail SMTP**
+
 1. Enable 2-Factor Authentication on your Google Account
 2. Generate an App Password: [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 3. Add credentials to `.env.local`
@@ -209,11 +214,13 @@ If after deploying to Vercel the magic link sends you to `localhost` instead of 
 ### Connect Hostinger Domain
 
 In Vercel:
+
 1. Go to **Settings → Domains**
 2. Add your domain (e.g., `yourshop.lk`)
 3. Copy the DNS records shown
 
 In Hostinger:
+
 1. Go to **Domains → DNS/Nameservers**
 2. Add Vercel's A records and CNAME
 3. Wait for propagation (usually < 1 hour)
@@ -243,6 +250,7 @@ NEXT_PUBLIC_SHOP_LNG=80.0534
 ```
 
 To find your coordinates:
+
 1. Open Google Maps
 2. Right-click your shop location
 3. Copy the coordinates (e.g., `6.235700, 80.053400`)
@@ -250,6 +258,7 @@ To find your coordinates:
 ## 📦 Product Management
 
 ### Add Products
+
 Products are managed via Supabase:
 
 1. Go to Supabase **Table Editor → products**
@@ -262,6 +271,7 @@ Products are managed via Supabase:
    - `is_available`: true/false
 
 ### Upload Product Images
+
 Use the admin panel to add images:
 
 1. Go to **`/admin/login`** (or `/admin`; you’ll be redirected to login) and sign in with your admin email and password
@@ -275,7 +285,9 @@ See `PRODUCT_IMAGES_SETUP.md` for detailed instructions.
 ## 🎨 Customization
 
 ### Colors
+
 Edit `tailwind.config.ts`:
+
 ```typescript
 colors: {
   primary: { /* Your green shades */ },
@@ -284,7 +296,9 @@ colors: {
 ```
 
 ### Shop Info
+
 Update in `.env.local`:
+
 ```env
 NEXT_PUBLIC_SHOP_NAME=Your Shop Name
 NEXT_PUBLIC_SHOP_ADDRESS=Your Address
@@ -331,6 +345,7 @@ NEXT_PUBLIC_SHOP_PHONE=+94XXXXXXXXX
 ## 🤝 Support
 
 For questions or issues:
+
 - Check [Supabase Docs](https://supabase.com/docs)
 - Check [Next.js Docs](https://nextjs.org/docs)
 - Email: (add your support email)

@@ -17,6 +17,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 4. **CI/CD Pipeline** - Automated quality checks
 
 **Problem Statement**: The codebase currently lacks:
+
 - Consistent code formatting standards
 - Reusable UI components (causing code duplication)
 - Type safety (with `any` types and type suppressions)
@@ -42,23 +43,29 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 ### Developer Stories
 
 **Story 1: Code Formatting**
+
 > As a developer, I want code to be automatically formatted on save, so that I don't waste time on manual formatting and code reviews focus on logic rather than style.
 
 **Story 2: Reusable Components**
+
 > As a developer, I want a standardized Button component, so that I can quickly build consistent UIs without duplicating button code across components.
 
 **Story 3: Type Safety**
+
 > As a developer, I want proper TypeScript types throughout the codebase, so that I can catch errors at compile-time and have better IDE autocomplete.
 
 **Story 4: Automated Checks**
+
 > As a developer, I want CI/CD to catch issues automatically, so that I have confidence my changes won't break production.
 
 ### Team Stories
 
 **Story 5: Code Review Efficiency**
+
 > As a code reviewer, I want automated formatting and type checking, so that reviews can focus on business logic and architecture rather than style issues.
 
 **Story 6: Onboarding**
+
 > As a new team member, I want clear component patterns and automated tooling, so that I can contribute productively from day one.
 
 ---
@@ -70,6 +77,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 **FR-1.1** The system must install Prettier and related ESLint integration packages.
 
 **FR-1.2** The system must create a `.prettierrc.json` configuration file with the following settings:
+
 - Semi-colons: enabled
 - Trailing commas: ES5 style
 - Single quotes: enabled
@@ -78,6 +86,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 - Use tabs: false
 
 **FR-1.3** The system must create a `.prettierignore` file to exclude:
+
 - `node_modules/`
 - `.next/`
 - `out/`
@@ -87,6 +96,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 - `package-lock.json`
 
 **FR-1.4** The system must add npm scripts to `package.json`:
+
 - `format` - Format all files
 - `format:check` - Check if files are formatted
 
@@ -99,6 +109,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 **FR-2.1** The system must create a Button component at `components/ui/Button.tsx`.
 
 **FR-2.2** The Button component must support the following variants:
+
 - `primary` - Main call-to-action style (green background)
 - `secondary` - Less prominent actions (white background, green border)
 - `outline` - Minimal style with border
@@ -106,26 +117,31 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 - `danger` - Destructive actions (red theme)
 
 **FR-2.3** The Button component must support the following sizes:
+
 - `sm` - Small (padding, font size)
 - `md` - Medium (default)
 - `lg` - Large
 
 **FR-2.4** The Button component must support a `loading` prop that:
+
 - Displays a loading spinner
 - Disables the button
 - Maintains button width (prevents layout shift)
 
 **FR-2.5** The Button component must support a `disabled` prop that:
+
 - Visually indicates disabled state (opacity, cursor)
 - Prevents click events
 - Maintains accessibility (aria-disabled)
 
 **FR-2.6** The Button component must support an `icon` prop that:
+
 - Accepts a React component (e.g., Lucide icons)
 - Positions icon to the left of text
 - Handles icon-only buttons (no text)
 
 **FR-2.7** The Button component must support all standard button attributes:
+
 - `onClick` - Click handler
 - `type` - button, submit, reset
 - `className` - Additional custom classes
@@ -136,6 +152,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 **FR-2.9** The Button component must follow Tailwind CSS conventions and use existing color tokens from `tailwind.config.ts`.
 
 **FR-2.10** The Button component must be accessible:
+
 - Proper ARIA attributes
 - Keyboard navigation support
 - Focus indicators
@@ -148,6 +165,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 ### 4.3 TypeScript Type Safety
 
 **FR-3.1** The system must create a proper type definitions file at `lib/supabase/types.ts` containing:
+
 - `UserProfile` interface
 - `AuthUser` interface (extending Supabase User)
 - `Product` interface
@@ -155,11 +173,13 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 - Other domain types as needed
 
 **FR-3.2** The system must remove all `any` types from:
+
 - `components/layout/Header.tsx` (line 11)
 - `components/cart/CartDrawer.tsx` (line 17)
 - Any other files containing `any` types
 
 **FR-3.3** The system must remove all `@ts-ignore` directives from:
+
 - `components/admin/ProductManagement.tsx` (lines 86, 71, 125)
 - Any other files containing `@ts-ignore`
 
@@ -178,11 +198,13 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 **FR-4.1** The system must create a GitHub Actions workflow at `.github/workflows/ci.yml`.
 
 **FR-4.2** The CI workflow must trigger on:
+
 - Push to `main` branch
 - Push to `develop` branch (if exists)
 - All pull requests to `main` and `develop`
 
 **FR-4.3** The CI workflow must run the following checks in parallel where possible:
+
 1. **Linting** - Run ESLint (`npm run lint`)
 2. **Type checking** - Run TypeScript compiler (`npx tsc --noEmit`)
 3. **Format checking** - Check Prettier formatting (`npm run format:check`)
@@ -194,6 +216,7 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 **FR-4.5** The CI workflow must use npm caching for faster builds.
 
 **FR-4.6** The CI workflow must fail (exit with error) if:
+
 - ESLint has errors (warnings are allowed)
 - TypeScript compilation fails
 - Code is not properly formatted
@@ -245,27 +268,30 @@ This initiative establishes fundamental code quality infrastructure for the Amba
 ### 6.2 Button Component Design
 
 **Visual Design**:
+
 - Follow existing brand colors (primary green, accent yellow/orange)
 - Use Tailwind CSS classes for consistency
 - Smooth transitions for hover/active states
 - Loading spinner matches button text color
 
 **Component API Design**:
+
 ```typescript
 interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
-  loading?: boolean
-  disabled?: boolean
-  icon?: React.ComponentType<{ className?: string }>
-  type?: 'button' | 'submit' | 'reset'
-  className?: string
-  onClick?: () => void
-  children?: React.ReactNode
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  disabled?: boolean;
+  icon?: React.ComponentType<{ className?: string }>;
+  type?: 'button' | 'submit' | 'reset';
+  className?: string;
+  onClick?: () => void;
+  children?: React.ReactNode;
 }
 ```
 
 **Example Usage**:
+
 ```tsx
 // Primary button
 <Button variant="primary" size="md">
@@ -289,6 +315,7 @@ interface ButtonProps {
 ### 6.3 TypeScript Types Architecture
 
 **File Structure**:
+
 ```
 lib/
 └── supabase/
@@ -298,24 +325,32 @@ lib/
 ```
 
 **Type Hierarchy**:
+
 ```typescript
 // Base Supabase types
-import { User } from '@supabase/supabase-js'
+import { User } from '@supabase/supabase-js';
 
 // Domain types
-export interface UserProfile { /* ... */ }
-export interface Product { /* ... */ }
-export interface Order { /* ... */ }
+export interface UserProfile {
+  /* ... */
+}
+export interface Product {
+  /* ... */
+}
+export interface Order {
+  /* ... */
+}
 
 // Composed types
 export interface AuthUser extends User {
-  profile?: UserProfile
+  profile?: UserProfile;
 }
 ```
 
 ### 6.4 CI/CD Workflow Design
 
 **Workflow Structure**:
+
 ```
 CI Workflow
 ├── Install & Cache (setup)
@@ -328,6 +363,7 @@ CI Workflow
 ```
 
 **Optimization Strategies**:
+
 - Use `npm ci` instead of `npm install` (faster, deterministic)
 - Cache `node_modules` using actions/cache
 - Run independent checks in parallel
@@ -369,20 +405,24 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### 7.4 Integration Points
 
 **Prettier + ESLint**:
+
 - Extend `eslint-config-prettier` to disable conflicting rules
 - Add `prettier/prettier` rule as error in ESLint
 
 **Button + Tailwind**:
+
 - Use Tailwind utility classes
 - Leverage existing color theme from `tailwind.config.ts`
 - Use `clsx` or template literals for conditional classes
 
 **Types + Supabase**:
+
 - Import Supabase base types (`User`, `Session`, etc.)
 - Extend base types for application-specific needs
 - Type Supabase query responses properly
 
 **CI + Vercel**:
+
 - CI runs on PRs before Vercel preview deployments
 - Vercel can be configured to block deployments if CI fails
 - Both systems should run similar checks
@@ -390,18 +430,21 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### 7.5 Migration Strategy
 
 **Phase 1: Setup (Day 1-2)**
+
 - Install and configure Prettier
 - Create ESLint integration
 - Format entire codebase
 - Commit formatted code
 
 **Phase 2: Components (Day 3-5)**
+
 - Create `components/ui/` directory
 - Build Button component
 - Test Button with various props
 - Document usage examples
 
 **Phase 3: Type Safety (Day 6-10)**
+
 - Create type definitions file
 - Fix `Header.tsx` and `CartDrawer.tsx` types
 - Remove `@ts-ignore` from `ProductManagement.tsx`
@@ -409,12 +452,14 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 - Run `tsc --noEmit` to verify
 
 **Phase 4: CI/CD (Day 11-14)**
+
 - Create GitHub Actions workflow
 - Test workflow on feature branch
 - Add status badge to README
 - Merge to main
 
 **Phase 5: Documentation (Day 15)**
+
 - Update README with new scripts
 - Document Button component
 - Add contributing guidelines for code quality
@@ -422,22 +467,27 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### 7.6 Potential Challenges
 
 **Challenge 1: Prettier Formatting Conflicts**
+
 - **Risk**: Formatting entire codebase may create large diffs
 - **Mitigation**: Do in separate PR, format once, then enforce
 
 **Challenge 2: TypeScript Errors**
+
 - **Risk**: Removing `any` types may reveal hidden bugs
 - **Mitigation**: Fix issues properly, don't just silence them
 
 **Challenge 3: Button Component Adoption**
+
 - **Risk**: Developers might not use new component
 - **Mitigation**: Clear documentation, lead by example, gradual migration
 
 **Challenge 4: CI Build Time**
+
 - **Risk**: Slow CI reduces developer velocity
 - **Mitigation**: Use caching, run checks in parallel, optimize build
 
 **Challenge 5: Breaking Changes**
+
 - **Risk**: Type changes might affect existing code
 - **Mitigation**: Thorough testing, fix incrementally, use feature branches
 
@@ -448,36 +498,43 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Quantitative Metrics
 
 **M-1: Code Consistency**
+
 - **Target**: 100% of code passes Prettier checks
 - **Measurement**: `npm run format:check` exits with code 0
 
 **M-2: Type Safety**
+
 - **Target**: 0 instances of `any` type in components
 - **Target**: 0 instances of `@ts-ignore` directives
 - **Measurement**: Code search for `any` and `@ts-ignore`
 
 **M-3: CI/CD Reliability**
+
 - **Target**: CI completes in under 5 minutes
 - **Target**: CI fails on all PRs with linting/type errors
 - **Measurement**: GitHub Actions run time, failure rate on bad PRs
 
 **M-4: Build Success Rate**
+
 - **Target**: 0 TypeScript compilation errors
 - **Measurement**: `npm run build` and `tsc --noEmit` both succeed
 
 ### Qualitative Metrics
 
 **M-5: Developer Experience**
+
 - **Indicator**: Developers report easier code reviews
 - **Indicator**: New contributors can set up development environment quickly
 - **Measurement**: Team feedback, onboarding time
 
 **M-6: Code Quality Confidence**
+
 - **Indicator**: Team has confidence in automated checks
 - **Indicator**: Fewer production bugs related to type errors
 - **Measurement**: Bug tracking, incident reports
 
 **M-7: Component Reusability**
+
 - **Indicator**: Button component is used in new features
 - **Indicator**: Reduced button-related code duplication
 - **Measurement**: Usage count, code analysis
@@ -485,6 +542,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Acceptance Criteria
 
 ✅ **Prettier**
+
 - [ ] Prettier configuration files created
 - [ ] ESLint integration configured
 - [ ] Entire codebase formatted
@@ -492,6 +550,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 - [ ] No formatting errors in CI
 
 ✅ **Button Component**
+
 - [ ] Component created with all required props
 - [ ] All 5 variants render correctly
 - [ ] All 3 sizes work as expected
@@ -502,6 +561,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 - [ ] Component is accessible (keyboard nav, ARIA)
 
 ✅ **TypeScript Types**
+
 - [ ] `lib/supabase/types.ts` created with all domain types
 - [ ] All `any` types removed from Header.tsx
 - [ ] All `any` types removed from CartDrawer.tsx
@@ -510,6 +570,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 - [ ] `tsc --noEmit` succeeds with no errors
 
 ✅ **CI/CD Pipeline**
+
 - [ ] `.github/workflows/ci.yml` created
 - [ ] CI runs on pushes to main/develop
 - [ ] CI runs on all pull requests
@@ -525,26 +586,32 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ## 9. Open Questions
 
 **Q1**: Should we add a `fullWidth` prop to Button component for responsive layouts? yes
+
 - **Impact**: Medium - Would improve mobile UX
 - **Decision needed by**: Before Button implementation
 
 **Q2**: Should CI also run on commits to feature branches (not just main/develop)? yes
+
 - **Impact**: Low - More CI runs, but better quality
 - **Decision needed by**: Before CI setup
 
 **Q3**: Do we need to type Supabase Realtime subscriptions now, or later?
+
 - **Impact**: Low - Not critical for current features
 - **Decision needed by**: During TypeScript fixes
 
 **Q4**: Should we configure Vercel to require CI passing before deployment? yes
+
 - **Impact**: High - Prevents broken deployments
 - **Decision needed by**: After CI is stable
 
 **Q5**: Should Button component use `forwardRef` for ref forwarding?
+
 - **Impact**: Medium - Needed for some advanced patterns
 - **Decision needed by**: Before Button implementation
 
 **Q6**: Do we need a `loading` prop for Button, or should we handle loading at parent level? yes
+
 - **Decision**: Include loading prop (already specified in FR-2.4)
 - **Rationale**: Common use case, better UX
 
@@ -555,6 +622,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Phase 1: Prettier Setup (2-3 days)
 
 **Tasks**:
+
 1. Install Prettier and ESLint integration packages
 2. Create `.prettierrc.json` configuration
 3. Create `.prettierignore` file
@@ -565,11 +633,13 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 8. Test format check in CI locally
 
 **Deliverables**:
+
 - Formatted codebase
 - Prettier configuration files
 - Updated package.json
 
 **Verification**:
+
 - `npm run format:check` passes
 - ESLint doesn't conflict with Prettier
 - Code reviews confirm formatting is consistent
@@ -577,6 +647,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Phase 2: Button Component (3-4 days)
 
 **Tasks**:
+
 1. Create `components/ui/` directory
 2. Create `Button.tsx` with TypeScript interface
 3. Implement all variants (primary, secondary, outline, ghost, danger)
@@ -590,11 +661,13 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 11. Create usage examples (in comments or separate file)
 
 **Deliverables**:
+
 - `components/ui/Button.tsx`
 - Usage examples
 - TypeScript types
 
 **Verification**:
+
 - Button renders all variants correctly
 - All props work as expected
 - TypeScript compiler is happy
@@ -603,6 +676,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Phase 3: TypeScript Type Safety (4-5 days)
 
 **Tasks**:
+
 1. Create `lib/supabase/types.ts` file
 2. Define `UserProfile` interface
 3. Define `AuthUser` interface
@@ -619,11 +693,13 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 14. Test all affected features
 
 **Deliverables**:
+
 - `lib/supabase/types.ts`
 - Fixed component files
 - No TypeScript errors
 
 **Verification**:
+
 - `tsc --noEmit` passes
 - `npm run build` succeeds
 - No `any` types in components (grep search)
@@ -633,6 +709,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Phase 4: CI/CD Pipeline (3-4 days)
 
 **Tasks**:
+
 1. Create `.github/workflows/` directory
 2. Create `ci.yml` workflow file
 3. Configure workflow triggers (push, PR)
@@ -648,11 +725,13 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 13. Verify CI runs on new PRs
 
 **Deliverables**:
+
 - `.github/workflows/ci.yml`
 - Updated README.md with badge
 - Working CI pipeline
 
 **Verification**:
+
 - CI runs on push to main/develop
 - CI runs on all PRs
 - CI fails when it should (test with bad code)
@@ -662,6 +741,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Phase 5: Documentation & Polish (1-2 days)
 
 **Tasks**:
+
 1. Update README.md with new npm scripts
 2. Document Button component usage
 3. Document TypeScript types structure
@@ -671,11 +751,13 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 7. Update IMPROVEMENTS.md to mark items complete
 
 **Deliverables**:
+
 - Updated documentation
 - Clear contributing guidelines
 - Summary of improvements
 
 **Verification**:
+
 - New developers can understand how to use new tools
 - Documentation is accurate and helpful
 - All checklists in IMPROVEMENTS.md are updated
@@ -687,6 +769,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Manual Testing
 
 **Prettier Testing**:
+
 1. Make formatting changes to a file
 2. Run `npm run format`
 3. Verify file is properly formatted
@@ -695,6 +778,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 6. Verify it catches the error
 
 **Button Component Testing**:
+
 1. Create test page with all Button variants
 2. Verify visual appearance of each variant
 3. Test hover/active states
@@ -705,6 +789,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 8. Test with screen reader
 
 **TypeScript Testing**:
+
 1. Verify `tsc --noEmit` passes
 2. Verify `npm run build` succeeds
 3. Test Header with authenticated user
@@ -714,6 +799,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 7. Verify no runtime errors
 
 **CI/CD Testing**:
+
 1. Create PR with good code - verify CI passes
 2. Create PR with lint error - verify CI fails
 3. Create PR with type error - verify CI fails
@@ -725,6 +811,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### Regression Testing
 
 **Test all critical user flows**:
+
 1. Browse products → Add to cart → Checkout → Order
 2. User signup → Verify email → Login
 3. Admin login → View orders → Update status
@@ -732,6 +819,7 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 5. Location picker for delivery
 
 **Verify no breaking changes**:
+
 - All existing features work
 - No TypeScript errors introduced
 - Build succeeds
@@ -745,18 +833,22 @@ npm install -D prettier eslint-config-prettier eslint-plugin-prettier
 ### If Issues Occur
 
 **Prettier Issues**:
+
 - **Problem**: Formatting breaks something
 - **Rollback**: Revert formatting commit, investigate specific file
 
 **Button Component Issues**:
+
 - **Problem**: Component has bugs
 - **Rollback**: Don't use Button yet, fix issues before adoption
 
 **TypeScript Issues**:
+
 - **Problem**: Type changes break features
 - **Rollback**: Revert type changes, investigate proper types, reapply
 
 **CI/CD Issues**:
+
 - **Problem**: CI blocks legitimate PRs
 - **Rollback**: Temporarily disable failing check, fix workflow, re-enable
 
@@ -802,11 +894,13 @@ git revert <commit-hash>
 ### High Risk
 
 **Risk 1: Large Formatting Diff**
+
 - **Impact**: Hard to review PR, potential merge conflicts
 - **Likelihood**: High
 - **Mitigation**: Format in separate PR, don't include logic changes
 
 **Risk 2: Hidden TypeScript Bugs**
+
 - **Impact**: Removing `any` reveals real bugs
 - **Likelihood**: Medium
 - **Mitigation**: Thorough testing, fix properly, don't rush
@@ -814,11 +908,13 @@ git revert <commit-hash>
 ### Medium Risk
 
 **Risk 3: CI Blocking Development**
+
 - **Impact**: Slow down development if CI is too strict
 - **Likelihood**: Medium
 - **Mitigation**: Make CI fast, provide clear error messages
 
 **Risk 4: Component Adoption**
+
 - **Impact**: New Button component not used
 - **Likelihood**: Low-Medium
 - **Mitigation**: Documentation, code reviews, gradual migration
@@ -826,6 +922,7 @@ git revert <commit-hash>
 ### Low Risk
 
 **Risk 5: Prettier Configuration Disputes**
+
 - **Impact**: Team disagrees on formatting rules
 - **Likelihood**: Low
 - **Mitigation**: Use community standards, focus on consistency
@@ -846,12 +943,14 @@ git revert <commit-hash>
 ### Monitoring
 
 **Week 1 After Launch**:
+
 - Monitor CI failure rate
 - Collect developer feedback
 - Track Button component usage
 - Check for TypeScript errors in logs
 
 **Month 1 After Launch**:
+
 - Measure code review efficiency (qualitative)
 - Count production bugs related to types
 - Assess onboarding time for new developers
@@ -863,12 +962,13 @@ git revert <commit-hash>
 
 **Prepared by**: AI Assistant  
 **Review required from**:
+
 - [ ] Tech Lead - Architecture and technical approach
 - [ ] Senior Developer - Implementation details and feasibility
 - [ ] Product Owner - Priority and timeline alignment
 
-**Approved by**: _________________  
-**Date**: _________________
+**Approved by**: **\*\*\*\***\_**\*\*\*\***  
+**Date**: **\*\*\*\***\_**\*\*\*\***
 
 ---
 
@@ -918,13 +1018,7 @@ export default function ProductCard({ product }) {
       <p>{product.price}</p>
 
       {/* Primary button with loading */}
-      <Button
-        variant="primary"
-        size="md"
-        loading={loading}
-        onClick={handleAddToCart}
-        icon={Plus}
-      >
+      <Button variant="primary" size="md" loading={loading} onClick={handleAddToCart} icon={Plus}>
         Add to Cart
       </Button>
 

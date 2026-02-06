@@ -40,6 +40,7 @@ Based on: `prd-password-based-authentication.md`
 **IMPORTANT:** As you complete each task, you must check it off in this markdown file by changing `- [ ]` to `- [x]`. This helps track progress and ensures you don't skip any steps.
 
 Example:
+
 - `- [ ] 1.1 Read file` → `- [x] 1.1 Read file` (after completing)
 
 Update the file after completing each sub-task, not just after completing an entire parent task.
@@ -47,7 +48,7 @@ Update the file after completing each sub-task, not just after completing an ent
 ## Tasks
 
 - [x] 0.0 Create feature branch
-  - [x] 0.1 Create and checkout a new branch: `git checkout -b feature/password-based-auth` *(run manually if branch creation had issues)*
+  - [x] 0.1 Create and checkout a new branch: `git checkout -b feature/password-based-auth` _(run manually if branch creation had issues)_
 
 - [x] 1.0 Set up database schema and infrastructure
   - [x] 1.1 Read current `supabase-schema.sql` file to understand existing schema

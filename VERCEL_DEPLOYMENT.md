@@ -3,6 +3,7 @@
 ## Pre-Deployment Checklist
 
 ### ✅ Fixed Issues
+
 - [x] `cookies()` made async for Next.js 15 compatibility
 - [x] Dynamic route params properly typed
 - [x] `.env.example` file created
@@ -12,6 +13,7 @@
 ## Step-by-Step Deployment
 
 ### 1. Prerequisites
+
 - [ ] GitHub/GitLab/Bitbucket account
 - [ ] Vercel account (free tier works great)
 - [ ] Supabase project set up and running
@@ -80,6 +82,7 @@ WHATSAPP_PHONE=94702228573
 ```
 
 **IMPORTANT NOTES:**
+
 - Variables starting with `NEXT_PUBLIC_` are exposed to the browser
 - DO NOT expose sensitive keys (like `RESEND_API_KEY`) with `NEXT_PUBLIC_` prefix
 - For Gmail SMTP, use an App Password (not your regular password)
@@ -140,9 +143,11 @@ If sign-in magic links send you to `http://localhost:3000` instead of your Verce
 ### Build Fails
 
 **Error: "cookies() should be awaited"**
+
 - ✅ Already fixed in this codebase
 
 **Error: "Module not found"**
+
 ```bash
 # Run locally to verify
 npm install
@@ -152,31 +157,37 @@ npm run build
 ### Runtime Errors
 
 **Error: "Supabase connection failed"**
+
 - Verify environment variables are set correctly in Vercel
 - Check `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 **Error: "Email not sending"**
+
 - Verify `RESEND_API_KEY` or SMTP credentials
 - Check Resend domain verification
 - For Gmail: Use App Password, enable 2FA first
 
 **Error: "Map not loading"**
+
 - This is normal - Leaflet loads client-side only
 - Check browser console for any errors
 
 ### Performance Issues
 
 **Slow page loads**
+
 - Enable Vercel Analytics
 - Check Supabase performance
 - Consider adding more `revalidate` options to pages
 
 **Images not optimized**
+
 - Supabase images are already optimized via `next.config.js`
 
 ## Environment-Specific Settings
 
 ### Development
+
 ```bash
 # Use .env.local for local development
 cp .env.example .env.local
@@ -184,41 +195,49 @@ cp .env.example .env.local
 ```
 
 ### Production (Vercel)
+
 - Set all environment variables in Vercel Dashboard
 - Never commit `.env.local` to Git
 
 ### Staging (Optional)
+
 - Create a separate Vercel project for staging
 - Use different Supabase project or branch
 
 ## Monitoring & Maintenance
 
 ### Vercel Analytics
+
 - Enable in Project Settings → Analytics
 - Monitor page views, performance, errors
 
 ### Supabase Logs
+
 - Check Supabase Dashboard → Database → Logs
 - Monitor API usage and errors
 
 ### Email Monitoring
+
 - **Resend:** Check dashboard for delivery status
 - **SMTP:** Check email provider logs
 
 ## Scaling Considerations
 
 ### Vercel Limits (Free Tier)
+
 - 100GB bandwidth/month
 - Serverless function timeout: 10s
 - Unlimited deployments
 
 ### Supabase Limits (Free Tier)
+
 - 500MB database storage
 - 1GB file storage
 - 2GB bandwidth
 - 50,000 monthly active users
 
 ### Upgrade When:
+
 - You exceed free tier limits
 - Need faster builds
 - Require team collaboration

@@ -27,6 +27,7 @@ This guide will help you set up product image uploads in your grocery website ad
 ### Step 3: Test the Upload Feature
 
 1. Make sure your development server is running:
+
    ```bash
    npm run dev
    ```
@@ -46,6 +47,7 @@ This guide will help you set up product image uploads in your grocery website ad
 ## ✨ Features
 
 ### For Admins:
+
 - **Upload images**: Click "Upload Image" on any product
 - **Change images**: Upload a new image to replace the current one
 - **Delete images**: Hover over an image and click the X button
@@ -54,6 +56,7 @@ This guide will help you set up product image uploads in your grocery website ad
 - **Toggle availability**: Mark products as available/unavailable
 
 ### Technical Details:
+
 - Images are stored in Supabase Storage (free 1GB)
 - Each image is automatically named with product ID + timestamp
 - Old images are automatically deleted when replaced
@@ -72,6 +75,7 @@ This guide will help you set up product image uploads in your grocery website ad
 ## 📝 Product Image Guidelines
 
 For best results:
+
 - **Recommended size**: 800x800 pixels (square)
 - **Format**: JPG or PNG
 - **File size**: Keep under 500KB for fast loading
@@ -81,18 +85,21 @@ For best results:
 ## 🔧 Troubleshooting
 
 ### "Failed to upload image" error
+
 - Check that the storage bucket is named exactly `product-images`
 - Verify the storage policies were created successfully
 - Make sure the bucket is set to **public**
 - Check file size is under 5MB
 
 ### Images not displaying
+
 - Check browser console for errors
 - Verify the image URL in Supabase (Products table → image_url column)
 - Make sure the storage bucket is public
 - Try clearing browser cache
 
 ### Permission errors
+
 - Verify you're logged in as admin (benujith@gmail.com)
 - Check the storage policies are applied correctly
 - Try logging out and back in
@@ -100,11 +107,13 @@ For best results:
 ## 📊 Storage Limits
 
 **Supabase Free Tier:**
+
 - 1GB storage (approximately 2,000-3,000 product images)
 - 2GB bandwidth per month
 - Unlimited API requests
 
 If you need more storage, upgrade to Supabase Pro ($25/month) for:
+
 - 100GB storage
 - 200GB bandwidth
 - Priority support
@@ -112,6 +121,7 @@ If you need more storage, upgrade to Supabase Pro ($25/month) for:
 ## 🌐 After Deployment
 
 When you deploy to Vercel:
+
 1. No additional configuration needed
 2. Images will work automatically
 3. Storage is managed by Supabase
@@ -120,6 +130,7 @@ When you deploy to Vercel:
 ## 📱 Mobile Support
 
 The admin panel is mobile-friendly:
+
 - Upload images from your phone
 - Take photos with your camera
 - Manage products on the go

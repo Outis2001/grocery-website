@@ -1,58 +1,58 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { ShoppingCart, User, Menu } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { cartStorage } from '@/lib/utils/cart'
-import { CartDrawer } from '../cart/CartDrawer'
+import Link from 'next/link';
+import { ShoppingCart, User, Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { cartStorage } from '@/lib/utils/cart';
+import { CartDrawer } from '../cart/CartDrawer';
 
 export function Header() {
-  const [user, setUser] = useState<any>(null)
-  const [cartCount, setCartCount] = useState(0)
-  const [showCart, setShowCart] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
+  const [user, setUser] = useState<any>(null);
+  const [cartCount, setCartCount] = useState(0);
+  const [showCart, setShowCart] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient()
-    
+    const supabase = createClient();
+
     // Get initial user
     supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user)
-    })
+      setUser(data.user);
+    });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null)
-      }
-    )
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
     // Update cart count
     const updateCartCount = () => {
-      setCartCount(cartStorage.getItemCount())
-    }
-    
-    updateCartCount()
-    
+      setCartCount(cartStorage.getItemCount());
+    };
+
+    updateCartCount();
+
     // Listen for storage changes (cart updates from other tabs)
-    window.addEventListener('storage', updateCartCount)
-    
+    window.addEventListener('storage', updateCartCount);
+
     // Custom event for same-tab cart updates
-    window.addEventListener('cartUpdated', updateCartCount)
+    window.addEventListener('cartUpdated', updateCartCount);
 
     return () => {
-      subscription.unsubscribe()
-      window.removeEventListener('storage', updateCartCount)
-      window.removeEventListener('cartUpdated', updateCartCount)
-    }
-  }, [])
+      subscription.unsubscribe();
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('cartUpdated', updateCartCount);
+    };
+  }, []);
 
   const handleSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    setShowMenu(false)
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setShowMenu(false);
+  };
 
   return (
     <>
@@ -65,9 +65,7 @@ export function Header() {
                 <span className="text-2xl">🛒</span>
               </div>
               <div className="hidden md:block">
-                <h1 className="text-xl font-bold text-gray-800">
-                  Ambalangoda Grocery
-                </h1>
+                <h1 className="text-xl font-bold text-gray-800">Ambalangoda Grocery</h1>
                 <p className="text-xs text-gray-500">Fresh & Fast</p>
               </div>
             </Link>
@@ -154,5 +152,5 @@ export function Header() {
 
       <CartDrawer isOpen={showCart} onClose={() => setShowCart(false)} />
     </>
-  )
+  );
 }

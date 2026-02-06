@@ -1,31 +1,31 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Package, ChevronRight, Loader2 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils/format'
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Package, ChevronRight, Loader2 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/format';
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('/api/orders')
+        const response = await fetch('/api/orders');
         if (response.ok) {
-          const data = await response.json()
-          setOrders(data.orders)
+          const data = await response.json();
+          setOrders(data.orders);
         }
       } catch (error) {
-        console.error('Error fetching orders:', error)
+        console.error('Error fetching orders:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchOrders()
-  }, [])
+    fetchOrders();
+  }, []);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -36,9 +36,9 @@ export default function OrdersPage() {
       dispatched: 'bg-indigo-100 text-indigo-800 border-indigo-200',
       completed: 'bg-gray-100 text-gray-800 border-gray-200',
       cancelled: 'bg-red-100 text-red-800 border-red-200',
-    }
-    return colors[status] || colors.pending
-  }
+    };
+    return colors[status] || colors.pending;
+  };
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
@@ -49,16 +49,16 @@ export default function OrdersPage() {
       dispatched: '🚚 Dispatched',
       completed: '🎉 Completed',
       cancelled: '❌ Cancelled',
-    }
-    return labels[status] || status
-  }
+    };
+    return labels[status] || status;
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
       </div>
-    )
+    );
   }
 
   return (
@@ -69,12 +69,8 @@ export default function OrdersPage() {
         {orders.length === 0 ? (
           <div className="bg-white rounded-xl shadow-md p-12 text-center">
             <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              No orders yet
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Start shopping to place your first order!
-            </p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">No orders yet</h2>
+            <p className="text-gray-600 mb-6">Start shopping to place your first order!</p>
             <Link
               href="/"
               className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg transition"
@@ -123,9 +119,7 @@ export default function OrdersPage() {
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">
-                      {order.order_items.length} item(s)
-                    </span>
+                    <span className="text-gray-600">{order.order_items.length} item(s)</span>
                     <span className="text-xl font-bold text-primary-600">
                       {formatCurrency(order.total)}
                     </span>
@@ -137,5 +131,5 @@ export default function OrdersPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

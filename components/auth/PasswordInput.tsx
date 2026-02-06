@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface PasswordInputProps {
-  id: string
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  autoComplete?: string
-  required?: boolean
-  disabled?: boolean
-  error?: string
-  className?: string
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  autoComplete?: string;
+  required?: boolean;
+  disabled?: boolean;
+  error?: string;
+  className?: string;
 }
 
 export function PasswordInput({
@@ -26,7 +26,7 @@ export function PasswordInput({
   error,
   className = '',
 }: PasswordInputProps) {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="relative">
@@ -42,9 +42,7 @@ export function PasswordInput({
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
         className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 ${
-          error
-            ? 'border-red-500 focus:ring-red-500'
-            : 'border-gray-300'
+          error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'
         } ${className}`}
       />
       <button
@@ -62,5 +60,5 @@ export function PasswordInput({
         </p>
       )}
     </div>
-  )
+  );
 }

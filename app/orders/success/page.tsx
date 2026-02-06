@@ -1,41 +1,41 @@
-'use client'
+'use client';
 
-import { useEffect, useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { CheckCircle, Phone, Home, Loader2 } from 'lucide-react'
-import { formatCurrency, formatWhatsAppPhone, generateWhatsAppMessage } from '@/lib/utils/format'
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { CheckCircle, Phone, Home, Loader2 } from 'lucide-react';
+import { formatCurrency, formatWhatsAppPhone, generateWhatsAppMessage } from '@/lib/utils/format';
 
 function OrderSuccessContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const orderId = searchParams.get('orderId')
-  
-  const [order, setOrder] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('orderId');
+
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!orderId) {
-      router.push('/')
-      return
+      router.push('/');
+      return;
     }
 
     const fetchOrder = async () => {
       try {
-        const response = await fetch(`/api/orders/${orderId}`)
+        const response = await fetch(`/api/orders/${orderId}`);
         if (response.ok) {
-          const data = await response.json()
-          setOrder(data.order)
+          const data = await response.json();
+          setOrder(data.order);
         }
       } catch (error) {
-        console.error('Error fetching order:', error)
+        console.error('Error fetching order:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchOrder()
-  }, [orderId, router])
+    fetchOrder();
+  }, [orderId, router]);
 
   if (loading) {
     return (
@@ -45,7 +45,7 @@ function OrderSuccessContent() {
           <p className="text-gray-600">Loading order details...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!order) {
@@ -58,10 +58,10 @@ function OrderSuccessContent() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
-  const whatsappPhone = formatWhatsAppPhone(process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '')
+  const whatsappPhone = formatWhatsAppPhone(process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '');
   const whatsappMessage = generateWhatsAppMessage(
     order.order_number,
     order.order_items.map((item: any) => ({
@@ -70,8 +70,8 @@ function OrderSuccessContent() {
     })),
     order.total,
     order.fulfillment_type
-  )
-  const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${whatsappMessage}`
+  );
+  const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${whatsappMessage}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-primary-50 py-12 px-4">
@@ -82,20 +82,14 @@ function OrderSuccessContent() {
           <div className="bg-gradient-to-r from-green-500 to-primary-600 text-white p-8 text-center">
             <CheckCircle className="w-20 h-20 mx-auto mb-4" />
             <h1 className="text-3xl font-bold mb-2">Order Placed Successfully!</h1>
-            <p className="text-green-100">
-              Your order has been received and is being processed
-            </p>
+            <p className="text-green-100">Your order has been received and is being processed</p>
           </div>
 
           {/* Order Details */}
           <div className="p-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Order #{order.order_number}
-              </h2>
-              <p className="text-gray-600">
-                Thank you, {order.customer_name}!
-              </p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Order #{order.order_number}</h2>
+              <p className="text-gray-600">Thank you, {order.customer_name}!</p>
             </div>
 
             {/* Fulfillment Info */}
@@ -104,16 +98,12 @@ function OrderSuccessContent() {
                 {order.fulfillment_type === 'pickup' ? (
                   <>
                     <Home className="w-6 h-6 text-primary-600" />
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Pickup from Store
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Pickup from Store</h3>
                   </>
                 ) : (
                   <>
                     <Phone className="w-6 h-6 text-primary-600" />
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Home Delivery
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Home Delivery</h3>
                   </>
                 )}
               </div>
@@ -133,9 +123,7 @@ function OrderSuccessContent() {
                     <span className="text-gray-700">
                       {item.product_name} × {item.quantity}
                     </span>
-                    <span className="font-medium">
-                      {formatCurrency(item.subtotal)}
-                    </span>
+                    <span className="font-medium">{formatCurrency(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
@@ -162,7 +150,8 @@ function OrderSuccessContent() {
             {/* Payment Info */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-yellow-800">
-                <strong>Payment:</strong> Cash on {order.fulfillment_type === 'pickup' ? 'pickup' : 'delivery'}
+                <strong>Payment:</strong> Cash on{' '}
+                {order.fulfillment_type === 'pickup' ? 'pickup' : 'delivery'}
               </p>
             </div>
 
@@ -176,7 +165,7 @@ function OrderSuccessContent() {
               >
                 📱 Send Order Details via WhatsApp
               </a>
-              
+
               <Link
                 href="/orders"
                 className="block w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-all text-center"
@@ -203,17 +192,19 @@ function OrderSuccessContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function OrderSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+        </div>
+      }
+    >
       <OrderSuccessContent />
     </Suspense>
-  )
+  );
 }

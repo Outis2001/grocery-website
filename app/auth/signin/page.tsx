@@ -1,78 +1,76 @@
-'use client'
+'use client';
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { PasswordInput } from '@/components/auth/PasswordInput'
-import { Loader2 } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { PasswordInput } from '@/components/auth/PasswordInput';
+import { Loader2 } from 'lucide-react';
 
 function SignInForm() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') || '/'
-  const urlError = searchParams.get('error')
-  const urlSuccess = searchParams.get('success')
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/';
+  const urlError = searchParams.get('error');
+  const urlSuccess = searchParams.get('success');
 
-  const [successMessage, setSuccessMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     if (urlError) {
-      setError(decodeURIComponent(urlError))
+      setError(decodeURIComponent(urlError));
     }
     if (urlSuccess) {
-      setSuccessMessage(decodeURIComponent(urlSuccess))
+      setSuccessMessage(decodeURIComponent(urlSuccess));
     }
-    const supabase = createClient()
+    const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
-        router.push(redirect)
+        router.push(redirect);
       }
-    })
-  }, [router, redirect, urlError, urlSuccess])
+    });
+  }, [router, redirect, urlError, urlSuccess]);
 
   const formatPhone = (value: string): string => {
-    let formatted = value.trim()
+    let formatted = value.trim();
     if (!formatted.startsWith('+')) {
       if (formatted.startsWith('0')) {
-        formatted = '+94' + formatted.substring(1)
+        formatted = '+94' + formatted.substring(1);
       } else if (formatted.startsWith('94')) {
-        formatted = '+' + formatted
+        formatted = '+' + formatted;
       } else {
-        formatted = '+94' + formatted
+        formatted = '+94' + formatted;
       }
     }
-    return formatted
-  }
+    return formatted;
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
-      const supabase = createClient()
-      const isEmail = username.includes('@')
+      const supabase = createClient();
+      const isEmail = username.includes('@');
       const { error } = await supabase.auth.signInWithPassword({
-        ...(isEmail
-          ? { email: username, password }
-          : { phone: formatPhone(username), password }),
-      })
+        ...(isEmail ? { email: username, password } : { phone: formatPhone(username), password }),
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      router.push(redirect)
+      router.push(redirect);
     } catch (err: unknown) {
-      setError('Invalid username or password')
+      setError('Invalid username or password');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -156,14 +154,17 @@ function SignInForm() {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             New here?{' '}
-            <Link href="/auth/signup" className="font-medium text-primary-600 hover:text-primary-700">
+            <Link
+              href="/auth/signup"
+              className="font-medium text-primary-600 hover:text-primary-700"
+            >
               Create an account
             </Link>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function SignInPage() {
@@ -177,5 +178,5 @@ export default function SignInPage() {
     >
       <SignInForm />
     </Suspense>
-  )
+  );
 }

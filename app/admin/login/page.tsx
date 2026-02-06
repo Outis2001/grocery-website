@@ -1,95 +1,105 @@
-'use client'
+'use client';
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { PasswordInput } from '@/components/auth/PasswordInput'
-import { Loader2, Shield } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { PasswordInput } from '@/components/auth/PasswordInput';
+import { Loader2, Shield } from 'lucide-react';
 
 function AdminLoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [checkingAuth, setCheckingAuth] = useState(true)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') || '/admin'
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/admin';
 
   useEffect(() => {
     const checkAuth = async () => {
-      const supabase = createClient()
-      const { data } = await supabase.auth.getUser()
-      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
       if (data.user && adminEmail && data.user.email === adminEmail) {
-        router.push(redirect)
-        return
+        router.push(redirect);
+        return;
       }
-      setCheckingAuth(false)
-    }
-    checkAuth()
-  }, [router, redirect])
+      setCheckingAuth(false);
+    };
+    checkAuth();
+  }, [router, redirect]);
 
   const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
-      })
+      });
 
-      if (authError) throw authError
+      if (authError) throw authError;
 
-      const { data: { user } } = await supabase.auth.getUser()
-      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
-      const emailMatchesAdmin = adminEmail && user?.email === adminEmail
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      const emailMatchesAdmin = adminEmail && user?.email === adminEmail;
 
-      type AdminProfile = { is_admin?: boolean } | null
-      let profile: AdminProfile = null
+      type AdminProfile = { is_admin?: boolean } | null;
+      let profile: AdminProfile = null;
       if (user) {
-        const res = await supabase.from('user_profiles').select('is_admin').eq('user_id', user.id).single()
-        profile = res.data as AdminProfile
+        const res = await supabase
+          .from('user_profiles')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .single();
+        profile = res.data as AdminProfile;
       }
 
-      const isAdmin = (profile && profile.is_admin === true) || !!emailMatchesAdmin
+      const isAdmin = (profile && profile.is_admin === true) || !!emailMatchesAdmin;
       if (!user || !isAdmin) {
-        await supabase.auth.signOut()
-        setError('Access denied. Admin credentials required.')
-        return
+        await supabase.auth.signOut();
+        setError('Access denied. Admin credentials required.');
+        return;
       }
 
-      router.push(redirect)
+      router.push(redirect);
     } catch (err: unknown) {
-      const message = err && typeof err === 'object' && 'message' in err
-        ? String((err as { message: string }).message)
-        : ''
+      const message =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message: string }).message)
+          : '';
       if (message.toLowerCase().includes('rate') || message.toLowerCase().includes('too many')) {
-        setError('Too many attempts. Try again later.')
-      } else if (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch')) {
-        setError('Connection error. Please try again.')
+        setError('Too many attempts. Try again later.');
+      } else if (
+        message.toLowerCase().includes('network') ||
+        message.toLowerCase().includes('fetch')
+      ) {
+        setError('Connection error. Please try again.');
       } else {
-        setError('Invalid email or password')
+        setError('Invalid email or password');
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
       </div>
-    )
+    );
   }
 
-  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Admin'
+  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Admin';
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-50">
@@ -127,7 +137,10 @@ function AdminLoginForm() {
             </div>
 
             <div>
-              <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="admin-password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Password
               </label>
               <PasswordInput
@@ -158,7 +171,7 @@ function AdminLoginForm() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function AdminLoginPage() {
@@ -172,5 +185,5 @@ export default function AdminLoginPage() {
     >
       <AdminLoginForm />
     </Suspense>
-  )
+  );
 }

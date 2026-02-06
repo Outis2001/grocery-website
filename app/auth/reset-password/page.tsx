@@ -1,97 +1,101 @@
-'use client'
+'use client';
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { PasswordInput } from '@/components/auth/PasswordInput'
-import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator'
-import { validatePassword } from '@/lib/auth/password'
-import { Loader2 } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { PasswordInput } from '@/components/auth/PasswordInput';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { validatePassword } from '@/lib/auth/password';
+import { Loader2 } from 'lucide-react';
 
 function ResetPasswordForm() {
-  const [step, setStep] = useState<'otp' | 'password'>('otp')
-  const [otp, setOtp] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [step, setStep] = useState<'otp' | 'password'>('otp');
+  const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const phone = searchParams.get('phone')
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const phone = searchParams.get('phone');
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = createClient();
 
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) setStep('password')
-    }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) setStep('password');
+    };
 
-    checkSession()
+    checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) setStep('password')
-    })
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setStep('password');
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!phone) return
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    if (!phone) return;
+    setLoading(true);
+    setError('');
 
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       const { error } = await supabase.auth.verifyOtp({
         phone,
         token: otp,
         type: 'sms',
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      setStep('password')
+      setStep('password');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid OTP')
+      setError(err instanceof Error ? err.message : 'Invalid OTP');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError('');
 
-    const validation = validatePassword(password)
+    const validation = validatePassword(password);
     if (!validation.valid) {
-      setError(validation.errors[0] || 'Invalid password')
-      return
+      setError(validation.errors[0] || 'Invalid password');
+      return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError('Passwords do not match');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.updateUser({ password })
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ password });
 
-      if (error) throw error
+      if (error) throw error;
 
-      router.push('/?success=Password updated successfully!')
+      router.push('/?success=Password updated successfully!');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to reset password')
+      setError(err instanceof Error ? err.message : 'Failed to reset password');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (!phone && step === 'otp') {
     return (
@@ -101,12 +105,15 @@ function ResetPasswordForm() {
             <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
             <p className="text-gray-600">Checking your reset link...</p>
             <p className="text-sm text-gray-500 mt-2">
-              If nothing happens, <Link href="/auth/forgot-password" className="text-primary-600">try again</Link>
+              If nothing happens,{' '}
+              <Link href="/auth/forgot-password" className="text-primary-600">
+                try again
+              </Link>
             </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -174,7 +181,10 @@ function ResetPasswordForm() {
                 />
               </div>
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Confirm Password
                 </label>
                 <PasswordInput
@@ -205,14 +215,17 @@ function ResetPasswordForm() {
           )}
 
           <p className="mt-6 text-center text-sm text-gray-600">
-            <Link href="/auth/signin" className="font-medium text-primary-600 hover:text-primary-700">
+            <Link
+              href="/auth/signin"
+              className="font-medium text-primary-600 hover:text-primary-700"
+            >
               Back to Sign In
             </Link>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function ResetPasswordPage() {
@@ -226,5 +239,5 @@ export default function ResetPasswordPage() {
     >
       <ResetPasswordForm />
     </Suspense>
-  )
+  );
 }

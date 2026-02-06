@@ -1,76 +1,76 @@
-'use client'
+'use client';
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 function VerifyOTPForm() {
-  const [otp, setOtp] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [resendCooldown, setResendCooldown] = useState(0)
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const phone = searchParams.get('phone') || ''
-  const redirect = searchParams.get('redirect') || '/auth/create-password'
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const phone = searchParams.get('phone') || '';
+  const redirect = searchParams.get('redirect') || '/auth/create-password';
 
   useEffect(() => {
     if (!phone) {
-      router.push('/auth/signup')
+      router.push('/auth/signup');
     }
-  }, [phone, router])
+  }, [phone, router]);
 
   // Countdown for resend cooldown
   useEffect(() => {
-    if (resendCooldown <= 0) return
-    const timer = setInterval(() => setResendCooldown((c) => c - 1), 1000)
-    return () => clearInterval(timer)
-  }, [resendCooldown])
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       const { error } = await supabase.auth.verifyOtp({
         phone,
         token: otp,
         type: 'sms',
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      router.push(redirect)
+      router.push(redirect);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid OTP')
+      setError(err instanceof Error ? err.message : 'Invalid OTP');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleResend = async () => {
-    if (resendCooldown > 0) return
-    setLoading(true)
-    setError('')
+    if (resendCooldown > 0) return;
+    setLoading(true);
+    setError('');
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOtp({ phone })
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({ phone });
 
-      if (error) throw error
+      if (error) throw error;
 
-      setResendCooldown(60)
-      setError('') // Clear any previous error
+      setResendCooldown(60);
+      setError(''); // Clear any previous error
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to resend OTP')
+      setError(err instanceof Error ? err.message : 'Failed to resend OTP');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -80,12 +80,8 @@ function VerifyOTPForm() {
             <div className="inline-flex p-4 rounded-full bg-primary-100 mb-4">
               <span className="text-4xl">📱</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              Verify Your Number
-            </h1>
-            <p className="text-gray-600">
-              Enter the OTP sent to {phone}
-            </p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Number</h1>
+            <p className="text-gray-600">Enter the OTP sent to {phone}</p>
           </div>
 
           {error && (
@@ -96,9 +92,7 @@ function VerifyOTPForm() {
 
           <form onSubmit={handleVerifyOTP} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                OTP Code
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">OTP Code</label>
               <input
                 type="text"
                 value={otp}
@@ -141,17 +135,19 @@ function VerifyOTPForm() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function VerifyOTPPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+        </div>
+      }
+    >
       <VerifyOTPForm />
     </Suspense>
-  )
+  );
 }

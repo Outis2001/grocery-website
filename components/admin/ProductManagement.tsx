@@ -1,113 +1,109 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { formatCurrency } from '@/lib/utils/format'
-import { Search, Loader2, Package } from 'lucide-react'
-import { ProductImageUpload } from './ProductImageUpload'
-import type { Database } from '@/lib/supabase/database.types'
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { formatCurrency } from '@/lib/utils/format';
+import { Search, Loader2, Package } from 'lucide-react';
+import { ProductImageUpload } from './ProductImageUpload';
+import type { Database } from '@/lib/supabase/database.types';
 
-type Product = Database['public']['Tables']['products']['Row']
+type Product = Database['public']['Tables']['products']['Row'];
 
 export function ProductManagement() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [categories, setCategories] = useState<string[]>([])
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
-    let filtered = products
+    let filtered = products;
 
     // Filter by category
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter((product) => product.category === categoryFilter)
+      filtered = filtered.filter((product) => product.category === categoryFilter);
     }
 
     // Filter by search query
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (product) =>
           product.name.toLowerCase().includes(query) ||
           product.name_si?.toLowerCase().includes(query) ||
           product.category.toLowerCase().includes(query)
-      )
+      );
     }
 
-    setFilteredProducts(filtered)
-  }, [products, categoryFilter, searchQuery])
+    setFilteredProducts(filtered);
+  }, [products, categoryFilter, searchQuery]);
 
   const fetchProducts = async () => {
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .order('category', { ascending: true })
-        .order('name', { ascending: true })
+        .order('name', { ascending: true });
 
-      if (error) throw error
+      if (error) throw error;
 
-      const list = (data || []) as Product[]
-      setProducts(list)
-      setFilteredProducts(list)
+      const list = (data || []) as Product[];
+      setProducts(list);
+      setFilteredProducts(list);
 
       // Extract unique categories
-      const uniqueCategories = Array.from(
-        new Set(list.map((p) => p.category))
-      ).sort()
-      setCategories(uniqueCategories)
+      const uniqueCategories = Array.from(new Set(list.map((p) => p.category))).sort();
+      setCategories(uniqueCategories);
     } catch (error) {
-      console.error('Error fetching products:', error)
+      console.error('Error fetching products:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleImageUpdated = (productId: string, newImageUrl: string | null) => {
     setProducts(
       products.map((product) =>
         product.id === productId ? { ...product, image_url: newImageUrl } : product
       )
-    )
-  }
+    );
+  };
 
   const toggleAvailability = async (productId: string, currentStatus: boolean) => {
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       const { error } = await supabase
         .from('products')
         // @ts-ignore - Supabase .update() infers 'never' in strict builds
         .update({ is_available: !currentStatus })
-        .eq('id', productId)
+        .eq('id', productId);
 
-      if (error) throw error
+      if (error) throw error;
 
       setProducts(
         products.map((product) =>
-          product.id === productId
-            ? { ...product, is_available: !currentStatus }
-            : product
+          product.id === productId ? { ...product, is_available: !currentStatus } : product
         )
-      )
+      );
     } catch (error) {
-      console.error('Error updating availability:', error)
-      alert('Failed to update product availability')
+      console.error('Error updating availability:', error);
+      alert('Failed to update product availability');
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
       </div>
-    )
+    );
   }
 
   return (
@@ -210,9 +206,7 @@ export function ProductManagement() {
                   productId={product.id}
                   productName={product.name}
                   currentImageUrl={product.image_url}
-                  onImageUpdated={(newImageUrl) =>
-                    handleImageUpdated(product.id, newImageUrl)
-                  }
+                  onImageUpdated={(newImageUrl) => handleImageUpdated(product.id, newImageUrl)}
                 />
               </div>
             </div>
@@ -224,16 +218,10 @@ export function ProductManagement() {
       <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
         <p className="text-sm text-primary-800">
           <strong>{filteredProducts.length}</strong> products •{' '}
-          <strong>
-            {filteredProducts.filter((p) => p.image_url).length}
-          </strong>{' '}
-          with images •{' '}
-          <strong>
-            {filteredProducts.filter((p) => !p.image_url).length}
-          </strong>{' '}
-          without images
+          <strong>{filteredProducts.filter((p) => p.image_url).length}</strong> with images •{' '}
+          <strong>{filteredProducts.filter((p) => !p.image_url).length}</strong> without images
         </p>
       </div>
     </div>
-  )
+  );
 }

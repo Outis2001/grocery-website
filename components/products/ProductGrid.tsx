@@ -1,29 +1,29 @@
-'use client'
+'use client';
 
-import { useState, useMemo } from 'react'
-import { Database } from '@/lib/supabase/database.types'
-import { ProductCard } from './ProductCard'
+import { useState, useMemo } from 'react';
+import { Database } from '@/lib/supabase/database.types';
+import { ProductCard } from './ProductCard';
 
-type Product = Database['public']['Tables']['products']['Row']
+type Product = Database['public']['Tables']['products']['Row'];
 
 interface ProductGridProps {
-  products: Product[]
+  products: Product[];
 }
 
 export function ProductGrid({ products }: ProductGridProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Get unique categories
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(products.map((p) => p.category)))
-    return ['all', ...cats.sort()]
-  }, [products])
+    const cats = Array.from(new Set(products.map((p) => p.category)));
+    return ['all', ...cats.sort()];
+  }, [products]);
 
   // Filter products by category
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'all') return products
-    return products.filter((p) => p.category === selectedCategory)
-  }, [products, selectedCategory])
+    if (selectedCategory === 'all') return products;
+    return products.filter((p) => p.category === selectedCategory);
+  }, [products, selectedCategory]);
 
   return (
     <div>
@@ -57,5 +57,5 @@ export function ProductGrid({ products }: ProductGridProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,39 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { sendOrderEmail } from '@/lib/email/send'
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { sendOrderEmail } from '@/lib/email/send';
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
+    const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) {
-            return cookieStore.get(name)?.value
+            return cookieStore.get(name)?.value;
           },
           set(name: string, value: string, options: any) {
-            cookieStore.set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options });
           },
           remove(name: string, options: any) {
-            cookieStore.set({ name, value: '', ...options })
+            cookieStore.set({ name, value: '', ...options });
           },
         },
       }
-    )
+    );
 
     // Verify authentication
     const {
       data: { session },
-    } = await supabase.auth.getSession()
+    } = await supabase.auth.getSession();
 
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json()
+    const body = await request.json();
     const {
       user_id,
       customer_name,
@@ -50,14 +50,18 @@ export async function POST(request: NextRequest) {
       total,
       customer_notes,
       items,
-    } = body
+    } = body;
 
     // Validate required fields
-    if (!user_id || !customer_name || !customer_phone || !fulfillment_type || !items || items.length === 0) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    if (
+      !user_id ||
+      !customer_name ||
+      !customer_phone ||
+      !fulfillment_type ||
+      !items ||
+      items.length === 0
+    ) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // Create order
@@ -80,14 +84,11 @@ export async function POST(request: NextRequest) {
         customer_notes,
       })
       .select()
-      .single()
+      .single();
 
     if (orderError) {
-      console.error('Order creation error:', orderError)
-      return NextResponse.json(
-        { error: 'Failed to create order' },
-        { status: 500 }
-      )
+      console.error('Order creation error:', orderError);
+      return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
     }
 
     // Create order items
@@ -98,20 +99,15 @@ export async function POST(request: NextRequest) {
       quantity: item.quantity,
       price_at_purchase: item.price_at_purchase,
       subtotal: item.subtotal,
-    }))
+    }));
 
-    const { error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems)
+    const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
 
     if (itemsError) {
-      console.error('Order items error:', itemsError)
+      console.error('Order items error:', itemsError);
       // Rollback order creation
-      await supabase.from('orders').delete().eq('id', order.id)
-      return NextResponse.json(
-        { error: 'Failed to create order items' },
-        { status: 500 }
-      )
+      await supabase.from('orders').delete().eq('id', order.id);
+      return NextResponse.json({ error: 'Failed to create order items' }, { status: 500 });
     }
 
     // Send email notification
@@ -123,50 +119,47 @@ export async function POST(request: NextRequest) {
         },
         to: customer_email || process.env.ADMIN_EMAIL!,
         toAdmin: true,
-      })
+      });
     } catch (emailError) {
-      console.error('Email error:', emailError)
+      console.error('Email error:', emailError);
       // Don't fail the order if email fails
     }
 
-    return NextResponse.json({ order }, { status: 201 })
+    return NextResponse.json({ order }, { status: 201 });
   } catch (error) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Unexpected error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
+    const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) {
-            return cookieStore.get(name)?.value
+            return cookieStore.get(name)?.value;
           },
           set(name: string, value: string, options: any) {
-            cookieStore.set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options });
           },
           remove(name: string, options: any) {
-            cookieStore.set({ name, value: '', ...options })
+            cookieStore.set({ name, value: '', ...options });
           },
         },
       }
-    )
+    );
 
     // Verify authentication
     const {
       data: { session },
-    } = await supabase.auth.getSession()
+    } = await supabase.auth.getSession();
 
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user's orders
@@ -186,22 +179,16 @@ export async function GET(request: NextRequest) {
       `
       )
       .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Fetch orders error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch orders' },
-        { status: 500 }
-      )
+      console.error('Fetch orders error:', error);
+      return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 
-    return NextResponse.json({ orders })
+    return NextResponse.json({ orders });
   } catch (error) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Unexpected error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

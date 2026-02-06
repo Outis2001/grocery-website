@@ -1,4 +1,4 @@
-import { Truck, Clock, ShieldCheck, MapPin } from 'lucide-react'
+import { Truck, Clock, ShieldCheck, MapPin } from 'lucide-react';
 
 export function Features() {
   const features = [
@@ -26,7 +26,7 @@ export function Features() {
       description: 'Serving Ambalangoda area',
       color: 'from-accent-600 to-accent-700',
     },
-  ]
+  ];
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12 -mt-8">
@@ -41,13 +41,11 @@ export function Features() {
             >
               {feature.icon}
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">
-              {feature.title}
-            </h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">{feature.title}</h3>
             <p className="text-gray-600">{feature.description}</p>
           </div>
         ))}
       </div>
     </section>
-  )
+  );
 }

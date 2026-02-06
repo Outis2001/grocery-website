@@ -1,10 +1,10 @@
-import Link from 'next/link'
-import { MapPin, Phone, Clock } from 'lucide-react'
+import Link from 'next/link';
+import { MapPin, Phone, Clock } from 'lucide-react';
 
 export function Footer() {
-  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery'
-  const shopAddress = process.env.NEXT_PUBLIC_SHOP_ADDRESS || 'City Center, Ambalangoda'
-  const shopPhone = process.env.NEXT_PUBLIC_SHOP_PHONE || '+94 77 123 4567'
+  const shopName = process.env.NEXT_PUBLIC_SHOP_NAME || 'Ambalangoda Grocery';
+  const shopAddress = process.env.NEXT_PUBLIC_SHOP_ADDRESS || 'City Center, Ambalangoda';
+  const shopPhone = process.env.NEXT_PUBLIC_SHOP_PHONE || '+94 77 123 4567';
 
   return (
     <footer className="bg-gradient-to-br from-primary-800 to-primary-900 text-white mt-auto">
@@ -17,7 +17,8 @@ export function Footer() {
               {shopName}
             </h3>
             <p className="text-primary-100 mb-4">
-              Fresh grocery essentials delivered to your doorstep. Quality products at affordable prices.
+              Fresh grocery essentials delivered to your doorstep. Quality products at affordable
+              prices.
             </p>
           </div>
 
@@ -66,10 +67,12 @@ export function Footer() {
         </div>
 
         <div className="border-t border-primary-700 mt-8 pt-6 text-center text-primary-200 text-sm">
-          <p>© {new Date().getFullYear()} {shopName}. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {shopName}. All rights reserved.
+          </p>
           <p className="mt-2">Serving Ambalangoda and surrounding areas within 5km radius</p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

@@ -1,100 +1,99 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { cartStorage } from '@/lib/utils/cart'
-import { calculateDeliveryFee, isWithinDeliveryRadius } from '@/lib/utils/distance'
-import { formatCurrency } from '@/lib/utils/format'
-import { Loader2, MapPin, Store, Zap } from 'lucide-react'
-import dynamic from 'next/dynamic'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { cartStorage } from '@/lib/utils/cart';
+import { calculateDeliveryFee, isWithinDeliveryRadius } from '@/lib/utils/distance';
+import { formatCurrency } from '@/lib/utils/format';
+import { Loader2, MapPin, Store, Zap } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 // Dynamically import map component (client-side only)
-const LocationPicker = dynamic(
-  () => import('@/components/checkout/LocationPicker'),
-  { ssr: false }
-)
+const LocationPicker = dynamic(() => import('@/components/checkout/LocationPicker'), {
+  ssr: false,
+});
 
 export default function CheckoutPage() {
-  const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [cart, setCart] = useState(cartStorage.getCart())
-  
-  // Form state
-  const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('delivery')
-  const [customerName, setCustomerName] = useState('')
-  const [customerPhone, setCustomerPhone] = useState('')
-  const [customerEmail, setCustomerEmail] = useState('')
-  const [deliveryAddress, setDeliveryAddress] = useState('')
-  const [deliveryLat, setDeliveryLat] = useState<number | null>(null)
-  const [deliveryLng, setDeliveryLng] = useState<number | null>(null)
-  const [expressDelivery, setExpressDelivery] = useState(false)
-  const [customerNotes, setCustomerNotes] = useState('')
-  
-  // Calculated state
-  const [deliveryDistance, setDeliveryDistance] = useState(0)
-  const [deliveryFee, setDeliveryFee] = useState(0)
-  const [withinRadius, setWithinRadius] = useState(true)
-  
-  // UI state
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [cart, setCart] = useState(cartStorage.getCart());
 
-  const shopLat = parseFloat(process.env.NEXT_PUBLIC_SHOP_LAT || '6.2357')
-  const shopLng = parseFloat(process.env.NEXT_PUBLIC_SHOP_LNG || '80.0534')
+  // Form state
+  const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('delivery');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryLat, setDeliveryLat] = useState<number | null>(null);
+  const [deliveryLng, setDeliveryLng] = useState<number | null>(null);
+  const [expressDelivery, setExpressDelivery] = useState(false);
+  const [customerNotes, setCustomerNotes] = useState('');
+
+  // Calculated state
+  const [deliveryDistance, setDeliveryDistance] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [withinRadius, setWithinRadius] = useState(true);
+
+  // UI state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const shopLat = parseFloat(process.env.NEXT_PUBLIC_SHOP_LAT || '6.2357');
+  const shopLng = parseFloat(process.env.NEXT_PUBLIC_SHOP_LNG || '80.0534');
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
-        setUser(data.user)
-        setCustomerEmail(data.user.email || '')
-        setCustomerPhone(data.user.phone || '')
+        setUser(data.user);
+        setCustomerEmail(data.user.email || '');
+        setCustomerPhone(data.user.phone || '');
       }
-    })
+    });
 
     // Check if cart is empty
     if (cart.items.length === 0) {
-      router.push('/')
+      router.push('/');
     }
-  }, [router])
+  }, [router]);
 
   useEffect(() => {
     if (fulfillmentType === 'delivery' && deliveryLat && deliveryLng) {
-      const result = isWithinDeliveryRadius(shopLat, shopLng, deliveryLat, deliveryLng)
-      setWithinRadius(result.withinRadius)
-      setDeliveryDistance(result.distance)
-      
+      const result = isWithinDeliveryRadius(shopLat, shopLng, deliveryLat, deliveryLng);
+      setWithinRadius(result.withinRadius);
+      setDeliveryDistance(result.distance);
+
       if (result.withinRadius) {
-        const fee = calculateDeliveryFee(result.distance, cart.total, expressDelivery)
-        setDeliveryFee(fee)
+        const fee = calculateDeliveryFee(result.distance, cart.total, expressDelivery);
+        setDeliveryFee(fee);
       }
     } else {
-      setDeliveryFee(0)
-      setDeliveryDistance(0)
-      setWithinRadius(true)
+      setDeliveryFee(0);
+      setDeliveryDistance(0);
+      setWithinRadius(true);
     }
-  }, [fulfillmentType, deliveryLat, deliveryLng, cart.total, expressDelivery, shopLat, shopLng])
+  }, [fulfillmentType, deliveryLat, deliveryLng, cart.total, expressDelivery, shopLat, shopLng]);
 
   const handleLocationSelect = (lat: number, lng: number, address: string) => {
-    setDeliveryLat(lat)
-    setDeliveryLng(lng)
-    setDeliveryAddress(address)
-  }
+    setDeliveryLat(lat);
+    setDeliveryLng(lng);
+    setDeliveryAddress(address);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
       // Validation
       if (fulfillmentType === 'delivery' && !withinRadius) {
-        throw new Error('Selected location is outside our delivery radius')
+        throw new Error('Selected location is outside our delivery radius');
       }
 
       if (fulfillmentType === 'delivery' && (!deliveryLat || !deliveryLng)) {
-        throw new Error('Please select a delivery location on the map')
+        throw new Error('Please select a delivery location on the map');
       }
 
       const orderData = {
@@ -119,40 +118,40 @@ export default function CheckoutPage() {
           price_at_purchase: item.product.price,
           subtotal: item.product.price * item.quantity,
         })),
-      }
+      };
 
       // Submit order
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to place order')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to place order');
       }
 
-      const { order } = await response.json()
+      const { order } = await response.json();
 
       // Clear cart
-      cartStorage.clearCart()
-      window.dispatchEvent(new Event('cartUpdated'))
+      cartStorage.clearCart();
+      window.dispatchEvent(new Event('cartUpdated'));
 
       // Redirect to success page
-      router.push(`/orders/success?orderId=${order.id}`)
+      router.push(`/orders/success?orderId=${order.id}`);
     } catch (err: any) {
-      setError(err.message || 'Failed to place order')
+      setError(err.message || 'Failed to place order');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (cart.items.length === 0) {
-    return null
+    return null;
   }
 
-  const total = cart.total + deliveryFee
+  const total = cart.total + deliveryFee;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -168,7 +167,7 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">
                   How would you like to receive your order?
                 </h2>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
@@ -179,9 +178,11 @@ export default function CheckoutPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <MapPin className={`w-8 h-8 mx-auto mb-2 ${
-                      fulfillmentType === 'delivery' ? 'text-primary-600' : 'text-gray-400'
-                    }`} />
+                    <MapPin
+                      className={`w-8 h-8 mx-auto mb-2 ${
+                        fulfillmentType === 'delivery' ? 'text-primary-600' : 'text-gray-400'
+                      }`}
+                    />
                     <div className="font-semibold">Delivery</div>
                     <div className="text-sm text-gray-500">To your address</div>
                   </button>
@@ -195,9 +196,11 @@ export default function CheckoutPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <Store className={`w-8 h-8 mx-auto mb-2 ${
-                      fulfillmentType === 'pickup' ? 'text-primary-600' : 'text-gray-400'
-                    }`} />
+                    <Store
+                      className={`w-8 h-8 mx-auto mb-2 ${
+                        fulfillmentType === 'pickup' ? 'text-primary-600' : 'text-gray-400'
+                      }`}
+                    />
                     <div className="font-semibold">Pickup</div>
                     <div className="text-sm text-gray-500">From our store</div>
                   </button>
@@ -216,7 +219,8 @@ export default function CheckoutPage() {
                       <Zap className="w-5 h-5 text-accent-500 mr-1" />
                       <span className="font-medium">Express Delivery</span>
                       <span className="text-sm text-gray-500 ml-2">
-                        (+{formatCurrency(parseFloat(process.env.NEXT_PUBLIC_EXPRESS_FEE || '150'))})
+                        (+{formatCurrency(parseFloat(process.env.NEXT_PUBLIC_EXPRESS_FEE || '150'))}
+                        )
                       </span>
                     </label>
                   </div>
@@ -225,10 +229,8 @@ export default function CheckoutPage() {
 
               {/* Customer Info */}
               <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                  Contact Information
-                </h2>
-                
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Contact Information</h2>
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -289,7 +291,7 @@ export default function CheckoutPage() {
                   <h2 className="text-xl font-semibold text-gray-800 mb-4">
                     Select Delivery Location
                   </h2>
-                  
+
                   <div className="h-96 rounded-lg overflow-hidden">
                     <LocationPicker
                       onLocationSelect={handleLocationSelect}
@@ -300,9 +302,7 @@ export default function CheckoutPage() {
 
                   {deliveryAddress && (
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm font-medium text-gray-700">
-                        Selected Address:
-                      </p>
+                      <p className="text-sm font-medium text-gray-700">Selected Address:</p>
                       <p className="text-gray-600">{deliveryAddress}</p>
                       {!withinRadius && (
                         <p className="text-red-600 text-sm mt-2">
@@ -323,9 +323,7 @@ export default function CheckoutPage() {
             {/* Right Column - Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-md p-6 sticky top-20">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                  Order Summary
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
 
                 <div className="space-y-3 mb-6">
                   {cart.items.map((item) => (
@@ -345,7 +343,7 @@ export default function CheckoutPage() {
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">{formatCurrency(cart.total)}</span>
                   </div>
-                  
+
                   {fulfillmentType === 'delivery' && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Delivery Fee</span>
@@ -387,7 +385,8 @@ export default function CheckoutPage() {
                 </button>
 
                 <p className="text-xs text-gray-500 text-center mt-3">
-                  No payment required. Pay on {fulfillmentType === 'pickup' ? 'pickup' : 'delivery'}.
+                  No payment required. Pay on {fulfillmentType === 'pickup' ? 'pickup' : 'delivery'}
+                  .
                 </p>
               </div>
             </div>
@@ -395,5 +394,5 @@ export default function CheckoutPage() {
         </form>
       </div>
     </div>
-  )
+  );
 }

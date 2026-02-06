@@ -44,3 +44,39 @@ $$;
 
 COMMENT ON COLUMN public.user_profiles.is_admin IS 'When true, user can log in via /admin/login without verification';
 COMMENT ON COLUMN public.user_profiles.skip_verification IS 'When true, user bypasses email/phone verification';
+
+-- RLS: Use is_admin for orders/products so app and DB agree (no hardcoded admin email)
+CREATE OR REPLACE FUNCTION public.is_admin_user()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT COALESCE(
+    (SELECT is_admin FROM public.user_profiles WHERE user_id = auth.uid() LIMIT 1),
+    false
+  );
+$$;
+
+DROP POLICY IF EXISTS "Users can view their own orders" ON orders;
+CREATE POLICY "Users can view their own orders" ON orders
+  FOR SELECT USING (auth.uid() = user_id OR public.is_admin_user());
+
+DROP POLICY IF EXISTS "Admins can update orders" ON orders;
+CREATE POLICY "Admins can update orders" ON orders
+  FOR UPDATE USING (public.is_admin_user());
+
+DROP POLICY IF EXISTS "Users can view their own order items" ON order_items;
+CREATE POLICY "Users can view their own order items" ON order_items
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM orders o
+      WHERE o.id = order_items.order_id
+      AND (o.user_id = auth.uid() OR public.is_admin_user())
+    )
+  );
+
+DROP POLICY IF EXISTS "Admins can manage products" ON products;
+CREATE POLICY "Admins can manage products" ON products
+  FOR ALL USING (public.is_admin_user());
